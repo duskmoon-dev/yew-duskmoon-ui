@@ -1,12 +1,9 @@
 use yew::prelude::*;
 
-use stylist::css;
-use stylist::yew::use_style;
-
-/// Props for [`Header`]
+/// Props for [`AppHeader`]
 #[derive(Properties, Clone, PartialEq)]
 pub struct AppHeaderProps {
-    /// CSS classes to add to the anchor element (optional).
+    /// CSS classes to add to the container element (optional).
     #[prop_or_default]
     pub classes: Classes,
     /// logo part
@@ -14,80 +11,31 @@ pub struct AppHeaderProps {
     /// menu part
     #[prop_or_default]
     pub menu: Html,
-    /// infor part
+    /// info part
     #[prop_or_default]
     pub info: Html,
 }
 
-/// Header component
+/// AppHeader component using Tailwind CSS navbar classes
 #[function_component(AppHeader)]
 pub fn app_header(props: &AppHeaderProps) -> Html {
-    let style = use_style(css!(
-        r#"
-    display: flex;
-    flex-direction: row;
-    height: 60px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2em;
-    box-shadow: 0 1px 4px 1px rgba(38, 60, 86, 0.1);
-    .left {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-start;
-        height: 100%;
-    }
-    .logo {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-start;
-        height: 100%;
-    }
-    .menu {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-start;
-        height: 100%;
-        margin: 0 1.25em;
-    }
-    .right {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-end;
-        height: 100%;
-    }
-    .info {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-start;
-        height: 100%;
-    }
-    "#
-    ));
     let owned_props = props.clone();
 
     html! {
-      <header class={classes!(style, owned_props.classes)}>
-        <div
-          class="left"
-        >
-          <div class="logo">
+      <nav class={classes!("navbar", "bg-surface-container-high", "shadow-md", "h-[60px]", "px-8", owned_props.classes)}>
+        <div class="navbar-start flex items-center h-full gap-4">
+          <div class="logo flex items-center h-full">
               { owned_props.logo }
           </div>
-          <div class="menu">
+          <div class="menu flex items-center h-full gap-5">
               { owned_props.menu }
           </div>
         </div>
-        <div class="right">
-          <div class="info">
+        <div class="navbar-end flex items-center h-full">
+          <div class="info flex items-center h-full">
               { owned_props.info }
           </div>
         </div>
-      </header>
+      </nav>
     }
 }

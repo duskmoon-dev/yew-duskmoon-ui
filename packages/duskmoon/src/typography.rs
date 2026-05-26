@@ -3,8 +3,6 @@ use yew::prelude::*;
 use yew::virtual_dom::AttrValue;
 use strum_macros::Display;
 use strum_macros::EnumIter;
-use stylist::css;
-use stylist::yew::use_style;
 
 #[derive(Clone, PartialEq, Debug, Display, EnumIter)]
 pub enum TypographyLevel {
@@ -22,7 +20,7 @@ pub enum TypographyLevel {
 pub struct TypographyProps {
     #[prop_or("p".to_string())]
     pub r#tag: String,
-    /// CSS classes to add to the anchor element (optional).
+    /// CSS classes to add to the element (optional).
     #[prop_or_default]
     pub classes: Classes,
     #[prop_or(TypographyLevel::Default)]
@@ -33,87 +31,77 @@ pub struct TypographyProps {
     pub target: AttrValue,
     #[prop_or_default]
     pub rel: AttrValue,
-    /// infor part
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
     pub onclick: Callback<Event>,
 }
 
-/// Typography component
+/// Typography component using Tailwind CSS utility classes
 #[function_component(Typography)]
 pub fn typography(props: &TypographyProps) -> Html {
-    let style = use_style(css!(
-        r#"
-        &.h1 {
-            font-size: 2.5rem;
-        }
-        &.h2 {
-            font-size: 2rem;
-        }
-        &.h3 {
-            font-size: 1.75rem;
-        }
-        &.h4 {
-            font-size: 1.5rem;
-        }
-        &.h5 {
-            font-size: 1.25rem;
-        }
-        &.h6 {
-            font-size: 1rem;
-        }
-    "#
-    ));
     let owned_props = props.clone();
     let onclick_func = props.onclick.clone();
+    
+    // Map TypographyLevel to standard Tailwind heading classes
+    let level_class = match props.r#level {
+        TypographyLevel::H1 => "text-4xl font-bold mb-4",
+        TypographyLevel::H2 => "text-3xl font-bold mb-3",
+        TypographyLevel::H3 => "text-2xl font-semibold mb-2",
+        TypographyLevel::H4 => "text-xl font-semibold mb-2",
+        TypographyLevel::H5 => "text-lg font-medium mb-1",
+        TypographyLevel::H6 => "text-base font-medium mb-1",
+        TypographyLevel::Default => "text-base leading-relaxed",
+    };
+
+    let class_list = classes!(level_class, owned_props.classes);
 
     match props.r#level {
         TypographyLevel::H1 => {
             html! {
-                <h1 class={ classes!(style, "h1", owned_props.classes) }>
-                { for owned_props.children.iter() }
+                <h1 class={ class_list } onclick={ move |e: Event| onclick_func.emit(e) }>
+                    { for owned_props.children.iter() }
                 </h1>
             }
         },
         TypographyLevel::H2 => {
             html! {
-                <h2 class={ classes!(style, "h2", owned_props.classes) }>
-                { for owned_props.children.iter() }
+                <h2 class={ class_list } onclick={ move |e: Event| onclick_func.emit(e) }>
+                    { for owned_props.children.iter() }
                 </h2>
             }
         },
         TypographyLevel::H3 => {
             html! {
-                <h3 class={ classes!(style, "h3", owned_props.classes) }>
-                { for owned_props.children.iter() }
+                <h3 class={ class_list } onclick={ move |e: Event| onclick_func.emit(e) }>
+                    { for owned_props.children.iter() }
                 </h3>
             }
         },
         TypographyLevel::H4 => {
             html! {
-                <h4 class={ classes!(style, "h4", owned_props.classes) }>
-                { for owned_props.children.iter() }
+                <h4 class={ class_list } onclick={ move |e: Event| onclick_func.emit(e) }>
+                    { for owned_props.children.iter() }
                 </h4>
             }
         },
         TypographyLevel::H5 => {
             html! {
-                <h5 class={ classes!(style, "h5", owned_props.classes) }>
-                { for owned_props.children.iter() }
+                <h5 class={ class_list } onclick={ move |e: Event| onclick_func.emit(e) }>
+                    { for owned_props.children.iter() }
                 </h5>
             }
         },
         TypographyLevel::H6 => {
             html! {
-                <h6 class={ classes!(style, "h6", owned_props.classes) }>
-                { for owned_props.children.iter() }
+                <h6 class={ class_list } onclick={ move |e: Event| onclick_func.emit(e) }>
+                    { for owned_props.children.iter() }
                 </h6>
             }
         },
         _ => html! {
             <p
-                class={ classes!(style, "text", owned_props.classes) }
+                class={ class_list }
                 onclick={ move |e: Event| onclick_func.emit(e) }
             >
                 { for owned_props.children.iter() }
@@ -121,4 +109,3 @@ pub fn typography(props: &TypographyProps) -> Html {
         },
     }
 }
-

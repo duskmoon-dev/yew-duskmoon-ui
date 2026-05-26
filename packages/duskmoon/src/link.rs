@@ -4,9 +4,6 @@ use yew::prelude::*;
 use yew_router::components::Link as YewLink;
 use yew_router::Routable;
 
-use stylist::css;
-use stylist::yew::use_style;
-
 /// Props for [`Link`]
 #[derive(Properties, Clone, PartialEq)]
 pub struct LinkProps<R, Q = ()>
@@ -31,37 +28,34 @@ where
     pub children: Children,
 }
 
-/// A wrapper around `<Link<R,Q>` tag to be used with [`Router`](crate::Router)
+/// Link component using Tailwind CSS utility classes
 #[function_component(Link)]
 pub fn link<R, Q = ()>(props: &LinkProps<R, Q>) -> Html
 where
     R: Routable + 'static,
     Q: Clone + PartialEq + Serialize + 'static,
 {
-    let style = use_style(css!(
-        r#"
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        min-width: 1em;
-        padding: 0.4em 0.8em;
-        border: none;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s;
-        text-decoration: none;
-        color: #44c2f4;
-
-        &:hover {
-            text-shadow: 0.3px 0.3px #aaa;
-        }
-    "#
-    ));
-
     let np = props.clone();
+    
+    // Default link styles mimicking original layout with Tailwind
+    let link_classes = classes!(
+        "inline-flex",
+        "items-center",
+        "justify-center",
+        "px-3",
+        "py-1.5",
+        "text-center",
+        "cursor-pointer",
+        "transition-all",
+        "duration-300",
+        "no-underline",
+        "text-primary",
+        "hover:text-opacity-80",
+        np.classes
+    );
 
     html! {
-        <YewLink<R,Q> classes={classes!(style, np.classes)}
+        <YewLink<R,Q> classes={link_classes}
             to={np.to}
             query={np.query}
             disabled={np.disabled}

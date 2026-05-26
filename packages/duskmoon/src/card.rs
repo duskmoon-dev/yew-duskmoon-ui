@@ -1,73 +1,42 @@
 use yew::prelude::*;
 
-use stylist::css;
-use stylist::yew::use_style;
-
 /// Props for [`Card`]
 #[derive(Properties, Clone, PartialEq)]
 pub struct CardProps {
-    /// CSS classes to add to the anchor element (optional).
+    /// CSS classes to add to the container element (optional).
     #[prop_or_default]
     pub classes: Classes,
     /// title part
     #[prop_or_default]
     pub title: Option<Html>,
-    /// infor part
+    /// content part
     #[prop_or_default]
     pub children: Children,
 }
 
-/// Card component
+/// Card component using Tailwind CSS classes
 #[function_component(Card)]
 pub fn card(props: &CardProps) -> Html {
-    let style = use_style(css!(
-        r#"
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    padding: 1.5rem;
-    gap: 0.618rem;
-    transition: box-shadow 300ms;
-    box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 #0000001a, 0 1px 2px -1px #0000001a;
-    &:hover {
-        box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 6px 0 #0000001a, 0 1px 4px -2px #0000001a;
-    }
-    .head {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        height: 1.48rem;
-    }
-    .body {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: flex-start;
-    }
-    "#
-    ));
     let owned_props = props.clone();
 
     html! {
-        <div class={classes!(style, owned_props.classes)}>
-            {
-                match owned_props.title {
-                    Some(_) => {
-                        html! {
-                            <div class="head">
-                                { owned_props.title }
-                            </div>
+        <div class={classes!("card", owned_props.classes)}>
+            <div class="card-body">
+                {
+                    match owned_props.title {
+                        Some(title) => {
+                            html! {
+                                <h2 class="card-title">
+                                    { title }
+                                </h2>
+                            }
+                        }
+                        None => {
+                            html! {}
                         }
                     }
-                    None => {
-                        html! {}
-                    }
                 }
-            }
-            <div class="body">
-            { for owned_props.children.iter() }
+                { for owned_props.children.iter() }
             </div>
         </div>
     }

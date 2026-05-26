@@ -27,7 +27,6 @@ yew-hooks = "0.6.4"
 wasm-bindgen = "0.2"
 wasm-logger = "0.2.0"
 yewdux = "0.13.0"
-stylist = { version = "0.15.1", features = ["yew_integration"] }
 strum = "0.28.0"
 strum_macros = "0.28.0"
 implicit-clone = { version = "0.6.0", features = ["map"] }

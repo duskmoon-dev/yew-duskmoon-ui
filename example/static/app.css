@@ -1,3 +1,9 @@
+@import "tailwindcss";
+@import "@duskmoon-dev/core";
+
+@source "../src/**/*.rs";
+@source "../../packages/duskmoon/src/**/*.rs";
+
 html, body {
     margin: 0;
     padding: 0;
@@ -27,13 +33,13 @@ body {
     width: 100%;
     height: calc(100vh - 60px);
     overflow-x: hidden;
+}
 
-    .app-main {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: center;
-        flex: 1 1 auto;
-        padding-top: 1em;
-    }
+.app .app-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    flex: 1 1 auto;
+    padding-top: 1em;
 }

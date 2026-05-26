@@ -12,3 +12,7 @@ Cargo.lock
 # build web
 dist
 
+# Node dependencies and compiled assets
+node_modules/
+**/node_modules/
+example/static/tailwind.css
