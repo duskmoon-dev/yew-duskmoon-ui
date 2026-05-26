@@ -46,7 +46,7 @@ pub fn component() -> Html {
                 <div>
                     <label class="t">{ format!("TypographyLevel::{:?}", l) }</label>
                     <div class="v">
-                    <Typography level={l.clone()}>{format!("Typography Level {:?}", l)}</Typography>
+                    <Typography level={l.clone()}>{html! { format!("Typography Level {:?}", l) }}</Typography>
                     </div>
                     <code class="c">
                     {format!("html!{{ <Typography level={{TypographyLevel::{}}}>Typography {}<Typography> }}", l, l)}

@@ -54,7 +54,7 @@ pub fn component() -> Html {
                 <li>
                   <label class="t">{ format!("ButtonType::{:?}", t) }</label>
                   <div class="v">
-                    <Button r#type={t.clone()}>{format!("{:?}", t)}</Button>
+                    <Button r#type={t.clone()}>{html! { format!("{:?}", t) }}</Button>
                   </div>
                   <div class="v">
                     <Button r#type={t.clone()} disabled={true}>{"Disabled"}</Button>

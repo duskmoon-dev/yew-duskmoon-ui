@@ -1,4 +1,4 @@
-use yew::html::onclick::Event;
+use web_sys::MouseEvent as Event;
 use yew::prelude::*;
 use yew::virtual_dom::AttrValue;
 use strum_macros::Display;

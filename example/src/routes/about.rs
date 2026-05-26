@@ -14,11 +14,11 @@ pub fn about() -> Html {
 
   {
       let state = state.clone();
-      use_effect_with_deps(
+      use_effect_with(
+          (),
           move |_| {
               state.run();
           },
-          (),
       );
   }
 
@@ -82,7 +82,7 @@ pub fn about() -> Html {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                { &repo.name }
+                                { html! { &repo.name } }
                             </Button>
                         </div>
                     </div>
