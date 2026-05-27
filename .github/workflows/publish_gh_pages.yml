@@ -6,36 +6,61 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   publish:
     runs-on: [self-hosted, linux, x64, hpc]
     # runs-on: ubuntu-latest
 
     steps:
-      - name: 🛑 Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-        with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v3
-      - name: rust-toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions/checkout@v4
         with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
+          path: yew-duskmoon-ui
+
+      - name: ⬇️ Checkout duskmoonui repo
+        uses: actions/checkout@v4
+        with:
+          repository: duskmoon-dev/duskmoonui
+          path: duskmoonui
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Build duskmoonui core plugin
+        working-directory: duskmoonui
+        run: |
+          bun install
+          bun run build:core
+
+      - name: Build example Tailwind CSS
+        working-directory: yew-duskmoon-ui/example
+        run: |
+          bun install
+          bun run build:css
+
+      - name: rust-toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
       - name: trunk-action
-        uses: jetli/trunk-action@v0.4.0
+        uses: jetli/trunk-action@v0.5.1
 
       # build css and rust
       - name: run trunk
-        working-directory: "example"
+        working-directory: yew-duskmoon-ui/example
         run: trunk build --release --public-url /yew-duskmoon-ui
 
       # deploy for github.io
       - name: GitHub Pages action
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: example/dist
+          publish_dir: yew-duskmoon-ui/example/dist
