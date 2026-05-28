@@ -1,15 +1,25 @@
-<!DOCTYPE html><html lang="en"><head>
+<!doctype html>
+<html lang="en" data-theme="sunshine">
+  <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/yew-duskmoon-ui/app-804614084912b027.css">
+    <link rel="stylesheet" href="/yew-duskmoon-ui/tailwind-8f03c6bdf64f19a2.css" integrity="sha384-AwyR4j+aVEQfyCOXCU3M4LPu+AZmDKWVFaG3zvVMrb7+VTOLR56zzU30RCmoF/2O"/>
     
-    <base href="/yew-duskmoon-ui/">
+    <base href="/yew-duskmoon-ui/" />
     <title>Duskmoon UI</title>
-  
-<link rel="preload" href="/yew-duskmoon-ui/yew-duskmoon-ui-demo-678644ba4cbc49dc_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/yew-duskmoon-ui/yew-duskmoon-ui-demo-678644ba4cbc49dc.js"></head>
+  <link rel="modulepreload" href="/yew-duskmoon-ui/yew-duskmoon-ui-demo-339482695ebb7aca.js" crossorigin="anonymous" integrity="sha384-5odHQzwkfR2iRt/U9e3f8GGACsRGfdoer3NUb8CxNMEIY+fGKtsQu/QbiMfkzNg4"><link rel="preload" href="/yew-duskmoon-ui/yew-duskmoon-ui-demo-339482695ebb7aca_bg.wasm" crossorigin="anonymous" integrity="sha384-ON+uadL0it/o4/YF5yStk+V/e+wpVYNcs7h696wGtTekYD3qJOOvoy1FyxHoJ5HC" as="fetch" type="application/wasm"></head>
   <body>
-    <script type="module">import init from '/yew-duskmoon-ui/yew-duskmoon-ui-demo-678644ba4cbc49dc.js';init('/yew-duskmoon-ui/yew-duskmoon-ui-demo-678644ba4cbc49dc_bg.wasm');</script>
-  
+    
+<script type="module">
+import init, * as bindings from '/yew-duskmoon-ui/yew-duskmoon-ui-demo-339482695ebb7aca.js';
+const wasm = await init({ module_or_path: '/yew-duskmoon-ui/yew-duskmoon-ui-demo-339482695ebb7aca_bg.wasm' });
 
-</body></html>
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script>
+  </body>
+</html>
