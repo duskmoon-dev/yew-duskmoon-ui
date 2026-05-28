@@ -12,8 +12,7 @@ concurrency:
 
 jobs:
   publish:
-    runs-on: [self-hosted, linux, x64, hpc]
-    # runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: ⬇️ Checkout repo
