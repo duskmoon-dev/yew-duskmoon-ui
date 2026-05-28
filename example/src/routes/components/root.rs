@@ -1,8 +1,7 @@
 use yew::prelude::*;
-use yew_duskmoon::Card;
-use yew_duskmoon::Link;
-use yew_duskmoon::Button;
+use yew_duskmoon::{Card, Link, Button, Typography};
 use yew_duskmoon::button::ButtonType;
+use yew_duskmoon::typography::TypographyLevel;
 
 use super::ComponentsRoute;
 
@@ -11,15 +10,15 @@ use super::ComponentsRoute;
 pub fn components_root() -> Html {
   html! {
     <div class="app">
-      <div class="flex justify-center items-center w-full min-h-[300px] bg-primary text-on-primary select-none bg-[url(./assets/moon.png)] bg-no-repeat bg-[size:20%] bg-right bg-blend-hard-light">
-        <h1 style="text-shadow: #FC0 1px 0 10px;" class="flex text-8xl">
+      <div style="text-shadow: #FC0 1px 0 10px;" class="flex justify-center items-center w-full min-h-[300px] bg-primary text-on-primary select-none bg-[url(./assets/moon.png)] bg-no-repeat bg-[size:20%] bg-right bg-blend-hard-light">
+        <Typography level={TypographyLevel::H1} classes="flex text-8xl m-0 font-bold">
           { "Duskmoon Components" }
-        </h1>
+        </Typography>
       </div>
       <div class="app-main" style="gap: 2rem">
         <Card
           title={html!{
-            <h3> { "General" } </h3>
+            <Typography level={TypographyLevel::H3}> { "General" } </Typography>
           }}
         >
           <div class="flex flex-row justify-center items-center gap-4">
@@ -34,19 +33,19 @@ pub fn components_root() -> Html {
               </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
+              <Link<ComponentsRoute> to={ComponentsRoute::CodeComponent}>
                 {"Code"}
-              </Button>
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
+              <Link<ComponentsRoute> to={ComponentsRoute::CodeComponent}>
                 {"Markdown"}
-              </Button>
+              </Link<ComponentsRoute>>
             </div>
           </div>
         </Card>
         <Card title={ html!{
-          <h3> { "Layout" } </h3>
+          <Typography level={TypographyLevel::H3}> { "Layout" } </Typography>
         }}>
           <div class="flex flex-row justify-center items-center gap-4">
             <div class="item">
@@ -60,9 +59,9 @@ pub fn components_root() -> Html {
               </Button>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
+              <Link<ComponentsRoute> to={ComponentsRoute::LayoutComponent}>
                 {"Divider"}
-              </Button>
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
               <Button r#type={ButtonType::Link} disabled={true}>
@@ -72,75 +71,75 @@ pub fn components_root() -> Html {
           </div>
         </Card>
         <Card title={ html!{
-          <h3> { "Form" } </h3>
+          <Typography level={TypographyLevel::H3}> { "Form" } </Typography>
         }}>
           <div class="flex flex-row justify-center items-center gap-4">
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
-                {"Layout"}
-              </Button>
+              <Link<ComponentsRoute> to={ComponentsRoute::FormComponent}>
+                {"Input"}
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
-                {"AppHeader"}
-              </Button>
+              <Link<ComponentsRoute> to={ComponentsRoute::FormComponent}>
+                {"Textarea"}
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
-                {"Row / Col"}
-              </Button>
+              <Link<ComponentsRoute> to={ComponentsRoute::FormComponent}>
+                {"Checkbox"}
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
-                {"Divider"}
-              </Button>
+              <Link<ComponentsRoute> to={ComponentsRoute::FormComponent}>
+                {"Radio"}
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
-                {"Space"}
-              </Button>
+              <Link<ComponentsRoute> to={ComponentsRoute::FormComponent}>
+                {"Switch"}
+              </Link<ComponentsRoute>>
             </div>
           </div>
         </Card>
         <Card title={ html!{
-          <h3> { "Data Display" } </h3>
+          <Typography level={TypographyLevel::H3}> { "Data Display" } </Typography>
         }}>
           <div class="flex flex-row justify-center items-center gap-4">
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
+              <Link<ComponentsRoute> to={ComponentsRoute::DataDisplayComponent}>
                 {"Card"}
-              </Button>
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
+              <Link<ComponentsRoute> to={ComponentsRoute::DataDisplayComponent}>
                 {"Table"}
-              </Button>
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
+              <Link<ComponentsRoute> to={ComponentsRoute::DataDisplayComponent}>
                 {"List"}
-              </Button>
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
-                {"Tree"}
-              </Button>
+              <Link<ComponentsRoute> to={ComponentsRoute::DataDisplayComponent}>
+                {"Badge"}
+              </Link<ComponentsRoute>>
             </div>
           </div>
         </Card>
         <Card title={ html!{
-          <h3> { "Feedback" } </h3>
+          <Typography level={TypographyLevel::H3}> { "Feedback" } </Typography>
         }}>
           <div class="flex flex-row justify-center items-center gap-4">
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
+              <Link<ComponentsRoute> to={ComponentsRoute::FeedbackComponent}>
                 {"Modal"}
-              </Button>
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
+              <Link<ComponentsRoute> to={ComponentsRoute::FeedbackComponent}>
                 {"Alert"}
-              </Button>
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
               <Button r#type={ButtonType::Link} disabled={true}>
@@ -155,28 +154,28 @@ pub fn components_root() -> Html {
           </div>
         </Card>
         <Card title={ html!{
-          <h3> { "Navigation" } </h3>
+          <Typography level={TypographyLevel::H3}> { "Navigation" } </Typography>
         }}>
           <div class="flex flex-row justify-center items-center gap-4">
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
-                {"Breadcrumb"}
-              </Button>
+              <Link<ComponentsRoute> to={ComponentsRoute::NavigationComponent}>
+                {"Breadcrumbs"}
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
+              <Link<ComponentsRoute> to={ComponentsRoute::NavigationComponent}>
                 {"Menu"}
-              </Button>
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
+              <Link<ComponentsRoute> to={ComponentsRoute::NavigationComponent}>
                 {"Pagination"}
-              </Button>
+              </Link<ComponentsRoute>>
             </div>
             <div class="item">
-              <Button r#type={ButtonType::Link} disabled={true}>
-                {"Steps"}
-              </Button>
+              <Link<ComponentsRoute> to={ComponentsRoute::NavigationComponent}>
+                {"Stepper"}
+              </Link<ComponentsRoute>>
             </div>
           </div>
         </Card>

@@ -3,10 +3,10 @@ use yewdux::prelude::*;
 
 use crate::states::config::ConfigStore;
 
-use yew_duskmoon::AppHeader;
-use yew_duskmoon::Link;
+use yew_duskmoon::{AppHeader, Link, Button};
 use yew_duskmoon::button::ButtonType;
-use yew_duskmoon::Button;
+use yew_duskmoon::typography::TypographyLevel;
+use yew_duskmoon::Typography;
 
 use crate::routes::AppRoute;
 
@@ -27,9 +27,9 @@ pub fn header() -> Html {
         classes={classes!(text_transform_class)}
         logo={
           html! {
-            <h1>
+            <Typography level={TypographyLevel::H3} classes="m-0 text-white font-bold">
               { "Duskmoon UI" }
-            </h1>
+            </Typography>
           }
         }
         menu={
