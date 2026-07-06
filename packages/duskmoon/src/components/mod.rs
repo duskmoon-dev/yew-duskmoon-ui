@@ -5,7 +5,7 @@ pub mod alert;
 pub use alert::Alert;
 
 pub mod appbar;
-pub use appbar::Appbar;
+pub use appbar::{Appbar, Appbar as AppBar};
 
 pub mod autocomplete;
 pub use autocomplete::Autocomplete;
@@ -20,7 +20,7 @@ pub mod bottom_navigation;
 pub use bottom_navigation::BottomNavigation;
 
 pub mod bottomsheet;
-pub use bottomsheet::Bottomsheet;
+pub use bottomsheet::{Bottomsheet, Bottomsheet as BottomSheet};
 
 pub mod breadcrumbs;
 pub use breadcrumbs::Breadcrumbs;
@@ -47,7 +47,7 @@ pub mod collapse;
 pub use collapse::Collapse;
 
 pub mod datepicker;
-pub use datepicker::Datepicker;
+pub use datepicker::{Datepicker, Datepicker as DatePicker};
 
 pub mod dialog;
 pub use dialog::Dialog;
@@ -66,6 +66,9 @@ pub use form::Form;
 
 pub mod form_group;
 pub use form_group::FormGroup;
+
+pub mod grid;
+pub use grid::{Grid, GridColumns, GridGap};
 
 pub mod input;
 pub use input::Input;

@@ -2,25 +2,21 @@ use yew::prelude::*;
 use yew_duskmoon::typography::TypographyLevel;
 use yew_duskmoon::{Link, Typography};
 
+use super::catalog::{ComponentCategory, COMPONENTS, CATEGORIES};
 use super::ComponentsRoute;
 
-fn catalog_group(
-    index: &'static str,
-    title: &'static str,
-    description: &'static str,
-    items: Vec<(&'static str, ComponentsRoute)>,
-) -> Html {
+fn catalog_group(category: &ComponentCategory) -> Html {
     html! {
         <article class="catalog-card">
-            <span class="catalog-index">{ index }</span>
+            <span class="catalog-index">{ category.index }</span>
             <div class="catalog-copy">
-                <h3 class="catalog-title">{ title }</h3>
-                <p>{ description }</p>
+                <h3 class="catalog-title">{ category.title }</h3>
+                <p>{ category.description }</p>
             </div>
             <div class="catalog-links">
-                { for items.into_iter().map(|(label, route)| html! {
-                    <Link<ComponentsRoute> to={route} classes="catalog-link">
-                        <span>{ label }</span>
+                { for COMPONENTS.iter().filter(|component| component.category == category.title).map(|component| html! {
+                    <Link<ComponentsRoute> to={ComponentsRoute::ComponentDetail { slug: component.slug.to_owned() }} classes="catalog-link">
+                        <span>{ component.name }</span>
                     </Link<ComponentsRoute>>
                 }) }
             </div>
@@ -48,84 +44,21 @@ pub fn components_root() -> Html {
             <main class="app-main catalog-main">
                 <section class="catalog-overview" aria-label="Catalog metrics">
                     <div>
-                        <span>{ "routes" }</span>
+                        <span>{ "demo routes" }</span>
                         <strong>{ "8" }</strong>
                     </div>
                     <div>
                         <span>{ "families" }</span>
-                        <strong>{ "6" }</strong>
+                        <strong>{ CATEGORIES.len().to_string() }</strong>
                     </div>
                     <div>
-                        <span>{ "colors" }</span>
-                        <strong>{ "10" }</strong>
+                        <span>{ "components" }</span>
+                        <strong>{ COMPONENTS.len().to_string() }</strong>
                     </div>
                 </section>
 
                 <section class="catalog-grid">
-                    { catalog_group(
-                        "01",
-                        "General",
-                        "Foundational pieces used throughout the rest of the example shell.",
-                        vec![
-                            ("Button", ComponentsRoute::ButtonComponent),
-                            ("Typography", ComponentsRoute::TypographyComponent),
-                            ("Code", ComponentsRoute::CodeComponent),
-                            ("Markdown", ComponentsRoute::CodeComponent),
-                        ],
-                    ) }
-                    { catalog_group(
-                        "02",
-                        "Layout",
-                        "Spacing and separation primitives for composing interface regions.",
-                        vec![
-                            ("Divider", ComponentsRoute::LayoutComponent),
-                            ("Space", ComponentsRoute::LayoutComponent),
-                        ],
-                    ) }
-                    { catalog_group(
-                        "03",
-                        "Form",
-                        "Input controls for capture, selection, and preference toggles.",
-                        vec![
-                            ("Input", ComponentsRoute::FormComponent),
-                            ("Textarea", ComponentsRoute::FormComponent),
-                            ("Checkbox", ComponentsRoute::FormComponent),
-                            ("Radio", ComponentsRoute::FormComponent),
-                            ("Switch", ComponentsRoute::FormComponent),
-                        ],
-                    ) }
-                    { catalog_group(
-                        "04",
-                        "Data Display",
-                        "Compact components for status, records, and structured data.",
-                        vec![
-                            ("Card", ComponentsRoute::DataDisplayComponent),
-                            ("Table", ComponentsRoute::DataDisplayComponent),
-                            ("List", ComponentsRoute::DataDisplayComponent),
-                            ("Badge", ComponentsRoute::DataDisplayComponent),
-                        ],
-                    ) }
-                    { catalog_group(
-                        "05",
-                        "Feedback",
-                        "Response surfaces for success, warning, error, and transient events.",
-                        vec![
-                            ("Modal", ComponentsRoute::FeedbackComponent),
-                            ("Alert", ComponentsRoute::FeedbackComponent),
-                            ("Toast", ComponentsRoute::FeedbackComponent),
-                        ],
-                    ) }
-                    { catalog_group(
-                        "06",
-                        "Navigation",
-                        "Route, hierarchy, progress, and page movement primitives.",
-                        vec![
-                            ("Breadcrumbs", ComponentsRoute::NavigationComponent),
-                            ("Menu", ComponentsRoute::NavigationComponent),
-                            ("Pagination", ComponentsRoute::NavigationComponent),
-                            ("Stepper", ComponentsRoute::NavigationComponent),
-                        ],
-                    ) }
+                    { for CATEGORIES.iter().map(catalog_group) }
                 </section>
             </main>
         </div>

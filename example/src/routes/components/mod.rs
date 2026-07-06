@@ -4,6 +4,7 @@ use yew_router::prelude::*;
 use self::button::ButtonComponent;
 use self::code::CodeComponent;
 use self::data_display::DataDisplayComponent;
+use self::detail::ComponentDetail;
 use self::feedback::FeedbackComponent;
 use self::form::FormComponent;
 use self::layout::LayoutComponent;
@@ -12,8 +13,10 @@ use self::typography::TypographyComponent;
 use crate::routes::AppRoute;
 
 pub mod button;
+pub mod catalog;
 pub mod code;
 pub mod data_display;
+pub mod detail;
 pub mod feedback;
 pub mod form;
 pub mod layout;
@@ -27,21 +30,23 @@ pub use self::root::ComponentsRoot;
 pub enum ComponentsRoute {
     #[at("/components")]
     ComponentsRoot,
-    #[at("/components/button")]
+    #[at("/components/:slug")]
+    ComponentDetail { slug: String },
+    #[at("/components/examples/button")]
     ButtonComponent,
-    #[at("/components/typography")]
+    #[at("/components/examples/typography")]
     TypographyComponent,
-    #[at("/components/code")]
+    #[at("/components/examples/code")]
     CodeComponent,
-    #[at("/components/layout")]
+    #[at("/components/examples/layout")]
     LayoutComponent,
-    #[at("/components/form")]
+    #[at("/components/examples/form")]
     FormComponent,
-    #[at("/components/data-display")]
+    #[at("/components/examples/data-display")]
     DataDisplayComponent,
-    #[at("/components/feedback")]
+    #[at("/components/examples/feedback")]
     FeedbackComponent,
-    #[at("/components/navigation")]
+    #[at("/components/examples/navigation")]
     NavigationComponent,
     #[not_found]
     #[at("/components/404")]
@@ -52,6 +57,7 @@ pub enum ComponentsRoute {
 pub fn switch_components(route: ComponentsRoute) -> Html {
     match route {
         ComponentsRoute::ComponentsRoot => html! { <ComponentsRoot /> },
+        ComponentsRoute::ComponentDetail { slug } => html! { <ComponentDetail slug={slug} /> },
         ComponentsRoute::ButtonComponent => html! { <ButtonComponent /> },
         ComponentsRoute::TypographyComponent => html! { <TypographyComponent /> },
         ComponentsRoute::CodeComponent => html! { <CodeComponent /> },
