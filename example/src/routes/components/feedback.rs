@@ -65,7 +65,7 @@ pub fn feedback_component() -> Html {
                             {"Click the button below to toggle the modal overlay."}
                         </Typography>
                         <div>
-                            <Button onclick={open_modal} classes="btn-primary">{"Open Modal"}</Button>
+                            <Button onclick={open_modal} variant={Some("primary".to_owned())}>{"Open Modal"}</Button>
                         </div>
                     </div>
                 </Card>
@@ -76,7 +76,7 @@ pub fn feedback_component() -> Html {
                             {"Click the button below to show a toast message."}
                         </Typography>
                         <div>
-                            <Button onclick={trigger_toast} classes="btn-secondary">{"Show Toast"}</Button>
+                            <Button onclick={trigger_toast} variant={Some("secondary".to_owned())}>{"Show Toast"}</Button>
                         </div>
                     </div>
                 </Card>
@@ -86,14 +86,14 @@ pub fn feedback_component() -> Html {
                     if *show_modal {
                         html! {
                             <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                                <Modal class="demo-modal">
+                                <Modal variant={Some("primary".to_owned())} class="demo-modal">
                                     <div class="p-6">
                                         <Typography level={TypographyLevel::H4} classes="mb-4">{"Interactive Modal"}</Typography>
                                         <Typography level={TypographyLevel::Default} classes="mb-6">
                                             {"This modal wrapper uses our custom Modal component and Yew state to control overlay visibility."}
                                         </Typography>
                                         <div class="flex justify-end gap-2">
-                                            <Button onclick={close_modal} classes="btn-tertiary">{"Close Dialog"}</Button>
+                                            <Button onclick={close_modal} variant={Some("tertiary".to_owned())}>{"Close Dialog"}</Button>
                                         </div>
                                     </div>
                                 </Modal>

@@ -57,6 +57,12 @@ const BUTTON_API: &[ApiRow] = &[
         docs: "Visual and semantic button mode.",
     },
     ApiRow {
+        prop: "variant",
+        ty: "Option<String>",
+        default: "None",
+        docs: "Appends a color modifier class such as btn-primary.",
+    },
+    ApiRow {
         prop: "href",
         ty: "AttrValue",
         default: "empty",
@@ -114,6 +120,12 @@ const CARD_API: &[ApiRow] = &[
         docs: "Optional title rendered in the card header.",
     },
     ApiRow {
+        prop: "variant",
+        ty: "Option<String>",
+        default: "None",
+        docs: "Appends a color modifier class such as card-primary.",
+    },
+    ApiRow {
         prop: "children",
         ty: "Children",
         default: "empty",
@@ -133,6 +145,12 @@ const GRID_API: &[ApiRow] = &[
         ty: "Children",
         default: "empty",
         docs: "Grid item content.",
+    },
+    ApiRow {
+        prop: "variant",
+        ty: "Option<String>",
+        default: "None",
+        docs: "Appends a color modifier class such as grid-primary.",
     },
     ApiRow {
         prop: "columns",
@@ -277,13 +295,13 @@ fn api_rows(kind: ApiKind) -> &'static [ApiRow] {
 fn usage_example(spec: &ComponentSpec) -> String {
     match spec.api_kind {
         ApiKind::Button => {
-            "use yew_duskmoon::button::ButtonType;\nuse yew_duskmoon::Button;\n\nhtml! {\n    <Button r#type={ButtonType::Primary}>{ \"Save\" }</Button>\n}".to_owned()
+            "use yew_duskmoon::Button;\n\nhtml! {\n    <Button variant={Some(\"primary\".to_owned())}>{ \"Save\" }</Button>\n}".to_owned()
         },
         ApiKind::Card => {
-            "use yew_duskmoon::Card;\n\nhtml! {\n    <Card title={html! { \"Card title\" }}>\n        { \"Card content\" }\n    </Card>\n}".to_owned()
+            "use yew_duskmoon::Card;\n\nhtml! {\n    <Card variant={Some(\"primary\".to_owned())} title={html! { \"Card title\" }}>\n        { \"Card content\" }\n    </Card>\n}".to_owned()
         },
         ApiKind::Grid => {
-            "use yew_duskmoon::{Grid, GridColumns, GridGap};\n\nhtml! {\n    <Grid columns={Some(GridColumns::AutoFit48)} gap={Some(GridGap::Md)}>\n        <div>{ \"Grid item\" }</div>\n    </Grid>\n}".to_owned()
+            "use yew_duskmoon::{Grid, GridColumns, GridGap};\n\nhtml! {\n    <Grid variant={Some(\"primary\".to_owned())} columns={Some(GridColumns::AutoFit48)} gap={Some(GridGap::Md)}>\n        <div>{ \"Grid item\" }</div>\n    </Grid>\n}".to_owned()
         },
         ApiKind::Standard => format!(
             "use yew_duskmoon::{};\n\nhtml! {{\n    <{} variant={{Some(\"primary\".to_owned())}} class=\"{}-demo\">\n        {{ \"{} content\" }}\n    </{}>\n}}",
@@ -319,32 +337,32 @@ fn render_demo(spec: &ComponentSpec) -> Html {
     match spec.slug {
         "button" => html! {
             <div class="detail-demo-stack">
-                <Button r#type={ButtonType::Primary} classes="component-detail-action">{ "Primary action" }</Button>
-                <Button r#type={ButtonType::Default} classes="component-detail-action">{ "Secondary action" }</Button>
-                <Button r#type={ButtonType::Link} href={"#api"} classes="component-detail-action">{ "API link" }</Button>
+                <Button variant={primary_variant()} classes="component-detail-action">{ "Primary action" }</Button>
+                <Button variant={Some("secondary".to_owned())} classes="component-detail-action">{ "Secondary action" }</Button>
+                <Button r#type={ButtonType::Link} variant={Some("tertiary".to_owned())} href={"#api"} classes="component-detail-action">{ "API link" }</Button>
             </div>
         },
         "card" => html! {
-            <Card title={html! { <span>{ "Card title" }</span> }} classes="component-detail-card-demo">
+            <Card variant={primary_variant()} title={html! { <span>{ "Card title" }</span> }} classes="component-detail-card-demo">
                 <p>{ "Cards keep related content and actions in one readable surface." }</p>
             </Card>
         },
         "grid" => html! {
-            <Grid columns={Some(GridColumns::AutoFit48)} gap={Some(GridGap::Md)} class="component-detail-grid-demo">
+            <Grid variant={primary_variant()} columns={Some(GridColumns::AutoFit48)} gap={Some(GridGap::Md)} class="component-detail-grid-demo">
                 { for ["Auto", "Fit", "Grid"].into_iter().map(|label| html! {
                     <div class="component-detail-grid-item">{ label }</div>
                 }) }
             </Grid>
         },
         "list" => html! {
-            <List class="component-detail-list-demo">
+            <List variant={primary_variant()} class="component-detail-list-demo">
                 <div>{ "Planning" }</div>
                 <div>{ "Implementation" }</div>
                 <div>{ "Verification" }</div>
             </List>
         },
         "table" => html! {
-            <Table class="component-detail-table-demo">
+            <Table variant={primary_variant()} class="component-detail-table-demo">
                 <div class="component-detail-table-row is-head">
                     <span>{ "Token" }</span>
                     <span>{ "State" }</span>
@@ -356,14 +374,14 @@ fn render_demo(spec: &ComponentSpec) -> Html {
             </Table>
         },
         "breadcrumbs" => html! {
-            <Breadcrumbs class="component-detail-breadcrumbs-demo">
+            <Breadcrumbs variant={primary_variant()} class="component-detail-breadcrumbs-demo">
                 <span>{ "Components" }</span>
                 <span>{ "/" }</span>
                 <strong>{ spec.name }</strong>
             </Breadcrumbs>
         },
         "pagination" => html! {
-            <Pagination class="component-detail-pagination-demo">
+            <Pagination variant={primary_variant()} class="component-detail-pagination-demo">
                 <button>{ "1" }</button>
                 <button class="is-active">{ "2" }</button>
                 <button>{ "3" }</button>
@@ -389,14 +407,14 @@ fn render_demo(spec: &ComponentSpec) -> Html {
             </Tabs>
         },
         "menu" => html! {
-            <Menu class="component-detail-menu-demo">
+            <Menu variant={primary_variant()} class="component-detail-menu-demo">
                 <a href="#docs">{ "Docs" }</a>
                 <a href="#api">{ "API" }</a>
                 <a href="#demo">{ "Demo" }</a>
             </Menu>
         },
         "navbar" => html! {
-            <Navbar class="component-detail-navbar-demo">
+            <Navbar variant={primary_variant()} class="component-detail-navbar-demo">
                 <strong>{ "Duskmoon" }</strong>
                 <span>{ "Components" }</span>
                 <span>{ "Themes" }</span>

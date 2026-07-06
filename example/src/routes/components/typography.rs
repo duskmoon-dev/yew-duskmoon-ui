@@ -4,7 +4,7 @@ use yew_duskmoon::typography::TypographyLevel;
 use yew_duskmoon::Card;
 use yew_duskmoon::Typography;
 
-use super::palette::PALETTE;
+use super::palette::{variant, PALETTE};
 
 /// Components page
 #[function_component(TypographyComponent)]
@@ -18,9 +18,9 @@ pub fn component() -> Html {
                             <h3>{ "Color variants" }</h3>
                             <div class="color-grid typography-color-grid">
                                 { for PALETTE.into_iter().map(|color| html! {
-                                    <div class={format!("typography-token typography-token-{}", color.key)}>
-                                        <Typography level={TypographyLevel::H4}>{ html! { color.label } }</Typography>
-                                        <Typography>{ html! { format!("text-{} / bg-{}", color.key, color.key) } }</Typography>
+                                    <div class="typography-token">
+                                        <Typography level={TypographyLevel::H4} variant={variant(color)}>{ html! { color.label } }</Typography>
+                                        <Typography variant={variant(color)}>{ html! { format!("typography-{}", color.key) } }</Typography>
                                     </div>
                                 }) }
                             </div>

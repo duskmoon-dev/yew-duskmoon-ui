@@ -14,6 +14,8 @@ where
     /// CSS classes to add to the anchor element (optional).
     #[prop_or_default]
     pub classes: Classes,
+    #[prop_or_default]
+    pub variant: Option<String>,
     /// Route that will be pushed when the anchor is clicked.
     pub to: R,
     /// Route query data
@@ -39,6 +41,7 @@ where
 
     // Default link styles mimicking original layout with Tailwind
     let link_classes = classes!(
+        "link",
         "inline-flex",
         "items-center",
         "justify-center",
@@ -49,10 +52,17 @@ where
         "transition-all",
         "duration-300",
         "no-underline",
-        "text-primary",
         "hover:text-opacity-80",
-        np.classes
     );
+    let mut link_classes = link_classes;
+
+    if let Some(variant) = &np.variant {
+        link_classes.push(format!("link-{}", variant));
+    } else {
+        link_classes.push("text-primary");
+    }
+
+    link_classes.push(np.classes.clone());
 
     html! {
         <YewLink<R,Q> classes={link_classes}

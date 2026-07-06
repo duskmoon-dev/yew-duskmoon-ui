@@ -36,35 +36,32 @@ pub fn data_display_component() -> Html {
                 </Card>
 
                 <Card title={html! { <Typography level={TypographyLevel::H4}>{"List Component"}</Typography> }} classes="component-card">
-                    <List class="color-list">
+                    <div class="color-grid compact-color-grid">
                         { for PALETTE.into_iter().map(|color| html! {
-                            <div class={classes!("color-list-row", format!("color-list-row-{}", color.key))}>
-                                <span>{ color.label }</span>
-                                <Badge variant={variant(color)}>{ html! { color.key } }</Badge>
-                            </div>
+                            <List variant={variant(color)} class="color-list">
+                                <div class="color-list-row">
+                                    <span>{ color.label }</span>
+                                    <Badge variant={variant(color)}>{ html! { color.key } }</Badge>
+                                </div>
+                            </List>
                         }) }
-                    </List>
+                    </div>
                 </Card>
 
                 <Card title={html! { <Typography level={TypographyLevel::H4}>{"Table Component"}</Typography> }} classes="component-card">
-                    <Table class="color-table">
-                        <thead>
-                            <tr>
-                                <th>{"Token"}</th>
-                                <th>{"Class"}</th>
-                                <th>{"Status"}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            { for PALETTE.into_iter().map(|color| html! {
-                                <tr class={format!("table-color-row table-color-row-{}", color.key)}>
-                                    <td>{ color.label }</td>
-                                    <td><code>{ format!("{} / {}-content", color.key, color.key) }</code></td>
-                                    <td><Badge variant={variant(color)}>{ "Available" }</Badge></td>
-                                </tr>
-                            }) }
-                        </tbody>
-                    </Table>
+                    <div class="color-grid compact-color-grid">
+                        { for PALETTE.into_iter().map(|color| html! {
+                            <Table variant={variant(color)} class="color-table">
+                                <tbody>
+                                    <tr class="table-color-row">
+                                        <td>{ color.label }</td>
+                                        <td><code>{ format!("table-{}", color.key) }</code></td>
+                                        <td><Badge variant={variant(color)}>{ "Available" }</Badge></td>
+                                    </tr>
+                                </tbody>
+                            </Table>
+                        }) }
+                    </div>
                 </Card>
             </div>
         </div>

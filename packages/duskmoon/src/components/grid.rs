@@ -107,6 +107,8 @@ pub struct GridProps {
     #[prop_or_default]
     pub class: Classes,
     #[prop_or_default]
+    pub variant: Option<String>,
+    #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
     pub columns: Option<GridColumns>,
@@ -132,6 +134,10 @@ pub fn grid(props: &GridProps) -> Html {
 
     if let Some(gap) = props.gap {
         classes.push(gap.class());
+    }
+
+    if let Some(variant) = &props.variant {
+        classes.push(format!("grid-{}", variant));
     }
 
     classes.push(props.class.clone());

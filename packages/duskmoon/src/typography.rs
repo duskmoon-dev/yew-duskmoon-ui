@@ -26,6 +26,8 @@ pub struct TypographyProps {
     #[prop_or(TypographyLevel::Default)]
     pub r#level: TypographyLevel,
     #[prop_or_default]
+    pub variant: Option<String>,
+    #[prop_or_default]
     pub href: AttrValue,
     #[prop_or_default]
     pub target: AttrValue,
@@ -54,7 +56,11 @@ pub fn typography(props: &TypographyProps) -> Html {
         TypographyLevel::Default => "text-base leading-relaxed",
     };
 
-    let class_list = classes!(level_class, owned_props.classes);
+    let mut class_list = classes!(level_class);
+    if let Some(variant) = &owned_props.variant {
+        class_list.push(format!("typography-{}", variant));
+    }
+    class_list.push(owned_props.classes.clone());
 
     match props.r#level {
         TypographyLevel::H1 => {

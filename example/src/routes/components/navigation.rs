@@ -18,29 +18,27 @@ pub fn navigation_component() -> Html {
                 <Typography level={TypographyLevel::H2}>{"Navigation Components"}</Typography>
 
                 <Card title={html! { <Typography level={TypographyLevel::H4}>{"Breadcrumbs"}</Typography> }} classes="component-card">
-                    <div class="flex flex-col gap-4 w-full">
-                        <Breadcrumbs class="color-breadcrumbs">
-                            { for PALETTE.into_iter().map(|color| html! {
-                                <>
-                                    <span class={format!("breadcrumb-token breadcrumb-token-{}", color.key)}>{ color.label }</span>
-                                    <span class="breadcrumb-divider">{"/"}</span>
-                                </>
-                            }) }
-                            <span class="breadcrumb-current">{"Navigation"}</span>
-                        </Breadcrumbs>
+                    <div class="color-grid compact-color-grid">
+                        { for PALETTE.into_iter().map(|color| html! {
+                            <Breadcrumbs variant={variant(color)} class="color-breadcrumbs">
+                                <span class="breadcrumb-token">{ color.label }</span>
+                                <span class="breadcrumb-divider">{"/"}</span>
+                                <span class="breadcrumb-current">{"Navigation"}</span>
+                            </Breadcrumbs>
+                        }) }
                     </div>
                 </Card>
 
                 <Card title={html! { <Typography level={TypographyLevel::H4}>{"Menu"}</Typography> }} classes="component-card">
                     <div class="color-grid menu-color-grid">
-                        <Menu class="color-menu">
-                            { for PALETTE.into_iter().map(|color| html! {
-                                <a href="#menu" class={format!("menu-color-item menu-color-item-{}", color.key)}>
+                        { for PALETTE.into_iter().map(|color| html! {
+                            <Menu variant={variant(color)} class="color-menu">
+                                <a href="#menu" class="menu-color-item">
                                     <span>{ color.label }</span>
                                     <code>{ format!("menu-{}", color.key) }</code>
                                 </a>
-                            }) }
-                        </Menu>
+                            </Menu>
+                        }) }
                     </div>
                 </Card>
 
@@ -49,7 +47,7 @@ pub fn navigation_component() -> Html {
                         { for PALETTE.into_iter().map(|color| html! {
                             <div class="pagination-color-cell">
                                 <span>{ color.label }</span>
-                                <Pagination class={classes!("color-pagination", format!("pagination-{}", color.key))}>
+                                <Pagination variant={variant(color)} class="color-pagination">
                                     {
                                         for (1..=3).map(|p| {
                                             let select = select_page.clone();

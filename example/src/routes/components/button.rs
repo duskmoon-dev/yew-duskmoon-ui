@@ -4,7 +4,7 @@ use yew_duskmoon::button::ButtonType;
 use yew_duskmoon::Card;
 use yew_duskmoon::Button;
 
-use super::palette::PALETTE;
+use super::palette::{variant, PALETTE};
 
 /// Components page
 #[function_component(ButtonComponent)]
@@ -26,7 +26,7 @@ pub fn component() -> Html {
                             <div class="color-grid button-color-grid">
                                 { for PALETTE.into_iter().map(|color| html! {
                                     <div class="color-cell">
-                                        <Button classes={classes!("color-button", format!("btn-{}", color.key))}>
+                                        <Button variant={variant(color)} classes="color-button">
                                             { html! { color.label } }
                                         </Button>
                                         <code>{ format!("btn-{}", color.key) }</code>
@@ -47,7 +47,7 @@ pub fn component() -> Html {
                                                 <Button r#type={t.clone()} disabled={true}>{"Disabled"}</Button>
                                                 <Button r#type={t.clone()} loading={true}>{"Loading"}</Button>
                                             </div>
-                                            <code>{format!("html! {{ <Button type={{ButtonType::{}}}>Button</Button> }}", t.clone())}</code>
+                                            <code>{format!("html! {{ <Button r#type={{ButtonType::{}}}>Button</Button> }}", t.clone())}</code>
                                         </li>
                                     }
                                 }).collect::<Html>()}

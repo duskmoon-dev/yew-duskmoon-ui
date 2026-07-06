@@ -6,6 +6,8 @@ pub struct AppHeaderProps {
     /// CSS classes to add to the container element (optional).
     #[prop_or_default]
     pub classes: Classes,
+    #[prop_or_default]
+    pub variant: Option<String>,
     /// logo part
     pub logo: Html,
     /// menu part
@@ -20,9 +22,23 @@ pub struct AppHeaderProps {
 #[function_component(AppHeader)]
 pub fn app_header(props: &AppHeaderProps) -> Html {
     let owned_props = props.clone();
+    let mut classes = classes!(
+        "app-header",
+        "navbar",
+        "bg-surface-container-high",
+        "shadow-md",
+        "h-[60px]",
+        "px-8"
+    );
+
+    if let Some(variant) = &owned_props.variant {
+        classes.push(format!("app-header-{}", variant));
+    }
+
+    classes.push(owned_props.classes.clone());
 
     html! {
-      <nav class={classes!("navbar", "bg-surface-container-high", "shadow-md", "h-[60px]", "px-8", owned_props.classes)}>
+      <nav class={classes}>
         <div class="navbar-start flex items-center h-full gap-4">
           <div class="logo flex items-center h-full">
               { owned_props.logo }

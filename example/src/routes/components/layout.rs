@@ -25,18 +25,20 @@ pub fn layout_component() -> Html {
 
                 <Card title={html! { <Typography level={TypographyLevel::H4}>{"Grid Component"}</Typography> }} classes="component-card">
                     <div class="component-stack">
-                        <Grid columns={Some(GridColumns::AutoFit48)} gap={Some(GridGap::Md)} class="layout-demo-grid">
+                        <div class="color-grid layout-color-grid">
                             { for PALETTE.into_iter().map(|color| html! {
-                                <div class={classes!("grid-demo-tile", format!("grid-demo-tile-{}", color.key))}>
-                                    <span>{ color.label }</span>
-                                    <code>{ "auto-fit-48" }</code>
-                                </div>
+                                <Grid variant={variant(color)} columns={Some(GridColumns::One)} gap={Some(GridGap::Sm)} class="layout-demo-grid grid-color-sample">
+                                    <div class="grid-demo-tile">
+                                        <span>{ color.label }</span>
+                                        <code>{ format!("grid-{}", color.key) }</code>
+                                    </div>
+                                </Grid>
                             }) }
-                        </Grid>
+                        </div>
 
-                        <Grid columns={Some(GridColumns::Three)} gap={Some(GridGap::Sm)} class="layout-demo-grid layout-demo-grid-fixed">
+                        <Grid variant={Some("neutral".to_owned())} columns={Some(GridColumns::Three)} gap={Some(GridGap::Sm)} class="layout-demo-grid layout-demo-grid-fixed">
                             { for ["grid-cols-3", "gap-2", "fixed tracks"].into_iter().map(|label| html! {
-                                <div class="grid-demo-tile grid-demo-tile-neutral">
+                                <div class="grid-demo-tile">
                                     <span>{ label }</span>
                                 </div>
                             }) }

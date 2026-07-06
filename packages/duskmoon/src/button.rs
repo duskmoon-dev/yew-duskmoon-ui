@@ -26,6 +26,8 @@ pub struct ButtonProps {
     #[prop_or(ButtonType::Default)]
     pub r#type: ButtonType,
     #[prop_or_default]
+    pub variant: Option<String>,
+    #[prop_or_default]
     pub href: AttrValue,
     #[prop_or_default]
     pub target: AttrValue,
@@ -49,18 +51,23 @@ pub fn button(props: &ButtonProps) -> Html {
 
     // Base Tailwind class
     let mut class_list = classes!("btn");
+    let has_variant = props.variant.is_some();
 
     // Map ButtonType to Tailwind class modifiers
     match props.r#type {
-        ButtonType::Primary => class_list.push("btn-primary"),
+        ButtonType::Primary if !has_variant => class_list.push("btn-primary"),
         ButtonType::Dashed => class_list.push("btn-outlined"), // Dashed behaves like outlined
-        ButtonType::Danger => class_list.push("btn-error"),
+        ButtonType::Danger if !has_variant => class_list.push("btn-error"),
         ButtonType::Link => class_list.push("btn-link"),
         ButtonType::Text => class_list.push("btn-text"),
         ButtonType::Circle => class_list.push("btn-icon"),
         ButtonType::Round => {} // MD3 buttons are round by default
         ButtonType::Block => class_list.push("btn-block"),
-        ButtonType::Default => {}
+        ButtonType::Primary | ButtonType::Danger | ButtonType::Default => {}
+    }
+
+    if let Some(variant) = &owned_props.variant {
+        class_list.push(format!("btn-{}", variant));
     }
 
     if owned_props.disabled {
