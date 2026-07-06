@@ -18,6 +18,7 @@ pub mod feedback;
 pub mod form;
 pub mod layout;
 pub mod navigation;
+pub mod palette;
 pub mod root;
 pub mod typography;
 pub use self::root::ComponentsRoot;

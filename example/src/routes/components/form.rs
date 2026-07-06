@@ -1,51 +1,45 @@
 use yew::prelude::*;
-use yew_duskmoon::{Card, Typography, Input, Textarea, Checkbox, Radio, Switch};
 use yew_duskmoon::typography::TypographyLevel;
+use yew_duskmoon::{Card, Checkbox, Input, Radio, Switch, Textarea, Typography};
+
+use super::palette::{variant, PALETTE};
 
 #[function_component(FormComponent)]
 pub fn form_component() -> Html {
     html! {
         <div class="app">
-            <div class="app-main w-[90%] mx-auto flex flex-col gap-6">
+            <div class="app-main component-main">
                 <Typography level={TypographyLevel::H2}>{"Form Components"}</Typography>
-                
-                <Card title={html! { <Typography level={TypographyLevel::H4}>{"Inputs and Textareas"}</Typography> }}>
-                    <div class="flex flex-col gap-4 w-full max-w-md">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-sm font-semibold">{"Standard Input:"}</label>
-                            <Input class="border p-2 rounded" />
-                        </div>
-                        
-                        <div class="flex flex-col gap-1">
-                            <label class="text-sm font-semibold">{"Standard Textarea:"}</label>
-                            <Textarea class="border p-2 rounded h-24" />
-                        </div>
+
+                <Card title={html! { <Typography level={TypographyLevel::H4}>{"Inputs and Textareas"}</Typography> }} classes="component-card">
+                    <div class="color-grid form-color-grid">
+                        { for PALETTE.into_iter().map(|color| html! {
+                            <div class="form-color-cell">
+                                <label>{ color.label }</label>
+                                <Input variant={variant(color)} class="input-bordered color-input">
+                                    { html! { format!("{} input", color.label) } }
+                                </Input>
+                                <Textarea variant={variant(color)} class="textarea-bordered color-textarea">
+                                    { html! { format!("{} textarea", color.label) } }
+                                </Textarea>
+                            </div>
+                        }) }
                     </div>
                 </Card>
 
-                <Card title={html! { <Typography level={TypographyLevel::H4}>{"Checkboxes, Radios, and Switches"}</Typography> }}>
-                    <div class="flex flex-col gap-4 w-full">
-                        <div class="flex items-center gap-2">
-                            <Checkbox />
-                            <label>{"Accept terms and conditions"}</label>
-                        </div>
-
-                        <div class="flex flex-col gap-2">
-                            <Typography level={TypographyLevel::Default} classes="font-semibold">{"Select an Option:"}</Typography>
-                            <div class="flex items-center gap-2">
-                                <Radio />
-                                <label>{"Option A"}</label>
+                <Card title={html! { <Typography level={TypographyLevel::H4}>{"Checkboxes, Radios, and Switches"}</Typography> }} classes="component-card">
+                    <div class="color-grid control-color-grid">
+                        { for PALETTE.into_iter().map(|color| html! {
+                            <div class="control-color-cell">
+                                <span>{ color.label }</span>
+                                <div class="control-samples">
+                                    <Checkbox variant={variant(color)} class="demo-check is-on" />
+                                    <Radio variant={variant(color)} class="demo-radio is-on" />
+                                    <Switch variant={variant(color)} class="demo-switch is-on" />
+                                </div>
+                                <code>{ format!("{}-*", color.key) }</code>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <Radio />
-                                <label>{"Option B"}</label>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <Switch />
-                            <label>{"Enable notifications"}</label>
-                        </div>
+                        }) }
                     </div>
                 </Card>
             </div>

@@ -1,39 +1,34 @@
 use yew::prelude::*;
-use yew_duskmoon::{Card, Typography, CodeBlock, MarkdownBody};
 use yew_duskmoon::typography::TypographyLevel;
+use yew_duskmoon::{Card, CodeBlock, MarkdownBody, Typography};
+
+use super::palette::{variant, PALETTE};
 
 #[function_component(CodeComponent)]
 pub fn code_component() -> Html {
     html! {
         <div class="app">
-            <div class="app-main w-[90%] mx-auto flex flex-col gap-6">
+            <div class="app-main component-main">
                 <Typography level={TypographyLevel::H2}>{"Code / Markdown Components"}</Typography>
-                
-                <Card title={html! { <Typography level={TypographyLevel::H4}>{"CodeBlock Component"}</Typography> }}>
-                    <div class="flex flex-col gap-4 w-full">
-                        <CodeBlock>
-                            <pre>
-                                { "fn main() {\n    println!(\"Hello, Duskmoon UI!\");\n}" }
-                            </pre>
-                        </CodeBlock>
-                        <CodeBlock variant="dark">
-                            <pre>
-                                { "const greet = () => {\n    console.log(\"Hello from Javascript\");\n};" }
-                            </pre>
-                        </CodeBlock>
+
+                <Card title={html! { <Typography level={TypographyLevel::H4}>{"CodeBlock Component"}</Typography> }} classes="component-card">
+                    <div class="color-grid code-color-grid">
+                        { for PALETTE.into_iter().map(|color| html! {
+                            <CodeBlock variant={variant(color)} class="code-token-block">
+                                <pre>{ format!("let token = \"{}\";", color.key) }</pre>
+                            </CodeBlock>
+                        }) }
                     </div>
                 </Card>
 
-                <Card title={html! { <Typography level={TypographyLevel::H4}>{"MarkdownBody Component"}</Typography> }}>
-                    <div class="flex flex-col gap-4 w-full">
-                        <MarkdownBody>
-                            <h3>{"Markdown Heading 3"}</h3>
-                            <p>{"This is an example of "}<strong>{"MarkdownBody"}</strong>{" component rendering some text with markdown classes."}</p>
-                            <ul>
-                                <li>{"Item 1"}</li>
-                                <li>{"Item 2"}</li>
-                            </ul>
-                        </MarkdownBody>
+                <Card title={html! { <Typography level={TypographyLevel::H4}>{"MarkdownBody Component"}</Typography> }} classes="component-card">
+                    <div class="color-grid markdown-color-grid">
+                        { for PALETTE.into_iter().map(|color| html! {
+                            <MarkdownBody variant={variant(color)} class="markdown-token-card">
+                                <h3>{ color.label }</h3>
+                                <p>{"Token pair: "}<strong>{ color.key }</strong>{" and content."}</p>
+                            </MarkdownBody>
+                        }) }
                     </div>
                 </Card>
             </div>

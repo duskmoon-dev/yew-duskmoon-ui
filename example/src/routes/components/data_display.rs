@@ -1,48 +1,68 @@
 use yew::prelude::*;
-use yew_duskmoon::{Card, Typography, Table, List, Badge};
 use yew_duskmoon::typography::TypographyLevel;
+use yew_duskmoon::{Badge, Card, Chip, List, Table, Typography};
+
+use super::palette::{variant, PALETTE};
 
 #[function_component(DataDisplayComponent)]
 pub fn data_display_component() -> Html {
     html! {
         <div class="app">
-            <div class="app-main w-[90%] mx-auto flex flex-col gap-6">
+            <div class="app-main component-main">
                 <Typography level={TypographyLevel::H2}>{"Data Display Components"}</Typography>
-                
-                <Card title={html! { <Typography level={TypographyLevel::H4}>{"Badge Component"}</Typography> }}>
-                    <div class="flex items-center gap-4">
-                        <Badge variant={Some("primary".to_string())}>{"New"}</Badge>
-                        <Badge variant={Some("success".to_string())}>{"Success"}</Badge>
-                        <Badge variant={Some("warning".to_string())}>{"Warning"}</Badge>
-                        <Badge variant={Some("error".to_string())}>{"Error"}</Badge>
+
+                <Card title={html! { <Typography level={TypographyLevel::H4}>{"Badge Component"}</Typography> }} classes="component-card">
+                    <div class="color-grid compact-color-grid">
+                        { for PALETTE.into_iter().map(|color| html! {
+                            <div class="color-cell">
+                                <Badge variant={variant(color)}>{ html! { color.label } }</Badge>
+                                <Badge variant={variant(color)} class="badge-soft">{ "Soft" }</Badge>
+                                <code>{ format!("badge-{}", color.key) }</code>
+                            </div>
+                        }) }
                     </div>
                 </Card>
 
-                <Card title={html! { <Typography level={TypographyLevel::H4}>{"List Component"}</Typography> }}>
-                    <List class="border rounded p-2">
-                        <div class="p-2 border-b">{"List Item 1"}</div>
-                        <div class="p-2 border-b">{"List Item 2"}</div>
-                        <div class="p-2">{"List Item 3"}</div>
+                <Card title={html! { <Typography level={TypographyLevel::H4}>{"Chip Component"}</Typography> }} classes="component-card">
+                    <div class="color-grid compact-color-grid">
+                        { for PALETTE.into_iter().map(|color| html! {
+                            <div class="color-cell">
+                                <Chip variant={variant(color)}>{ html! { color.label } }</Chip>
+                                <Chip variant={variant(color)} class="chip-tonal">{ "Tonal" }</Chip>
+                                <code>{ format!("chip-{}", color.key) }</code>
+                            </div>
+                        }) }
+                    </div>
+                </Card>
+
+                <Card title={html! { <Typography level={TypographyLevel::H4}>{"List Component"}</Typography> }} classes="component-card">
+                    <List class="color-list">
+                        { for PALETTE.into_iter().map(|color| html! {
+                            <div class={classes!("color-list-row", format!("color-list-row-{}", color.key))}>
+                                <span>{ color.label }</span>
+                                <Badge variant={variant(color)}>{ html! { color.key } }</Badge>
+                            </div>
+                        }) }
                     </List>
                 </Card>
 
-                <Card title={html! { <Typography level={TypographyLevel::H4}>{"Table Component"}</Typography> }}>
-                    <Table class="w-full border-collapse border">
+                <Card title={html! { <Typography level={TypographyLevel::H4}>{"Table Component"}</Typography> }} classes="component-card">
+                    <Table class="color-table">
                         <thead>
-                            <tr class="bg-gray-100 dark:bg-gray-800">
-                                <th class="border p-2 text-left">{"Name"}</th>
-                                <th class="border p-2 text-left">{"Role"}</th>
+                            <tr>
+                                <th>{"Token"}</th>
+                                <th>{"Class"}</th>
+                                <th>{"Status"}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="border p-2">{"Duskmoon"}</td>
-                                <td class="border p-2">{"Admin"}</td>
-                            </tr>
-                            <tr class="bg-gray-50 dark:bg-gray-900">
-                                <td class="border p-2">{"Yew"}</td>
-                                <td class="border p-2">{"Developer"}</td>
-                            </tr>
+                            { for PALETTE.into_iter().map(|color| html! {
+                                <tr class={format!("table-color-row table-color-row-{}", color.key)}>
+                                    <td>{ color.label }</td>
+                                    <td><code>{ format!("{} / {}-content", color.key, color.key) }</code></td>
+                                    <td><Badge variant={variant(color)}>{ "Available" }</Badge></td>
+                                </tr>
+                            }) }
                         </tbody>
                     </Table>
                 </Card>
