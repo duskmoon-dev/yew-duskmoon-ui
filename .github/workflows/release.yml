@@ -66,10 +66,19 @@ jobs:
       - name: Build release package
         run: cargo package --package yew-duskmoon --allow-dirty
 
+      - name: Verify crates.io token
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          if [ -z "$CARGO_REGISTRY_TOKEN" ]; then
+            echo "::error title=Missing crates.io token::Set the CARGO_REGISTRY_TOKEN repository secret to a crates.io API token."
+            exit 1
+          fi
+
       - name: Publish crate
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: cargo publish --package yew-duskmoon --allow-dirty --token "$CARGO_REGISTRY_TOKEN"
+        run: cargo publish --package yew-duskmoon --allow-dirty --registry crates-io
 
       - name: Commit version bump
         env:
