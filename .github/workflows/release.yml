@@ -84,7 +84,7 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          git add packages/duskmoon/Cargo.toml Cargo.lock
+          git add packages/duskmoon/Cargo.toml
           git commit -m "chore(release): v${VERSION}"
 
       - name: Create and push tag
