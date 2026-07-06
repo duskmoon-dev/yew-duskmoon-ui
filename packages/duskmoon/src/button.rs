@@ -1,8 +1,8 @@
+use strum_macros::Display;
+use strum_macros::EnumIter;
 use web_sys::MouseEvent as Event;
 use yew::prelude::*;
 use yew::virtual_dom::AttrValue;
-use strum_macros::Display;
-use strum_macros::EnumIter;
 
 #[derive(Clone, PartialEq, Debug, Display, EnumIter)]
 pub enum ButtonType {
@@ -46,10 +46,10 @@ pub struct ButtonProps {
 pub fn button(props: &ButtonProps) -> Html {
     let owned_props = props.clone();
     let onclick_func = props.onclick.clone();
-    
+
     // Base Tailwind class
     let mut class_list = classes!("btn");
-    
+
     // Map ButtonType to Tailwind class modifiers
     match props.r#type {
         ButtonType::Primary => class_list.push("btn-primary"),
@@ -58,18 +58,18 @@ pub fn button(props: &ButtonProps) -> Html {
         ButtonType::Link => class_list.push("btn-link"),
         ButtonType::Text => class_list.push("btn-text"),
         ButtonType::Circle => class_list.push("btn-icon"),
-        ButtonType::Round => {}, // MD3 buttons are round by default
+        ButtonType::Round => {} // MD3 buttons are round by default
         ButtonType::Block => class_list.push("btn-block"),
-        ButtonType::Default => {},
+        ButtonType::Default => {}
     }
-    
+
     if owned_props.disabled {
         class_list.push("disabled");
     }
     if owned_props.loading {
         class_list.push("btn-loading");
     }
-    
+
     class_list.push(owned_props.classes);
 
     match props.r#type {

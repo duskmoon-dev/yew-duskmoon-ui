@@ -1,8 +1,8 @@
+use strum_macros::Display;
+use strum_macros::EnumIter;
 use web_sys::MouseEvent as Event;
 use yew::prelude::*;
 use yew::virtual_dom::AttrValue;
-use strum_macros::Display;
-use strum_macros::EnumIter;
 
 #[derive(Clone, PartialEq, Debug, Display, EnumIter)]
 pub enum TypographyLevel {
@@ -42,7 +42,7 @@ pub struct TypographyProps {
 pub fn typography(props: &TypographyProps) -> Html {
     let owned_props = props.clone();
     let onclick_func = props.onclick.clone();
-    
+
     // Map TypographyLevel to standard Tailwind heading classes
     let level_class = match props.r#level {
         TypographyLevel::H1 => "text-4xl font-bold mb-4",
@@ -63,42 +63,42 @@ pub fn typography(props: &TypographyProps) -> Html {
                     { for owned_props.children.iter() }
                 </h1>
             }
-        },
+        }
         TypographyLevel::H2 => {
             html! {
                 <h2 class={ class_list } onclick={ move |e: Event| onclick_func.emit(e) }>
                     { for owned_props.children.iter() }
                 </h2>
             }
-        },
+        }
         TypographyLevel::H3 => {
             html! {
                 <h3 class={ class_list } onclick={ move |e: Event| onclick_func.emit(e) }>
                     { for owned_props.children.iter() }
                 </h3>
             }
-        },
+        }
         TypographyLevel::H4 => {
             html! {
                 <h4 class={ class_list } onclick={ move |e: Event| onclick_func.emit(e) }>
                     { for owned_props.children.iter() }
                 </h4>
             }
-        },
+        }
         TypographyLevel::H5 => {
             html! {
                 <h5 class={ class_list } onclick={ move |e: Event| onclick_func.emit(e) }>
                     { for owned_props.children.iter() }
                 </h5>
             }
-        },
+        }
         TypographyLevel::H6 => {
             html! {
                 <h6 class={ class_list } onclick={ move |e: Event| onclick_func.emit(e) }>
                     { for owned_props.children.iter() }
                 </h6>
             }
-        },
+        }
         _ => html! {
             <p
                 class={ class_list }

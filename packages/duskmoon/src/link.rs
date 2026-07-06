@@ -36,7 +36,7 @@ where
     Q: Clone + PartialEq + Serialize + 'static,
 {
     let np = props.clone();
-    
+
     // Default link styles mimicking original layout with Tailwind
     let link_classes = classes!(
         "inline-flex",
