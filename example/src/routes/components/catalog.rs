@@ -91,7 +91,7 @@ pub const COMPONENTS: &[ComponentSpec] = &[
         description: "Toggle button controls.",
         docs: "Use Toggle for binary tool states where the pressed state behaves like an action button rather than a form switch.",
         component_name: "Toggle",
-        class_name: "toggle",
+        class_name: "toggle-group",
         api_kind: ApiKind::Standard,
     },
     ComponentSpec {
