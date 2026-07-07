@@ -107,7 +107,7 @@ pub mod pin_input;
 pub use pin_input::PinInput;
 
 pub mod popover;
-pub use popover::Popover;
+pub use popover::{Popover, PopoverTrigger};
 
 pub mod progress;
 pub use progress::Progress;
@@ -168,3 +168,5 @@ pub use tooltip::Tooltip;
 
 pub mod tree_select;
 pub use tree_select::TreeSelect;
+
+mod variants;
