@@ -12,6 +12,7 @@ use yew_duskmoon::{
 };
 
 use super::catalog::{component_by_slug, ApiKind, ComponentSpec};
+use super::palette::{variant, PaletteColor, PALETTE};
 use super::ComponentsRoute;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -278,6 +279,16 @@ fn render_component_detail(spec: &'static ComponentSpec) -> Html {
                         { render_demo(spec) }
                     </div>
                 </section>
+
+                <section id="colors" class="detail-section detail-colors-section">
+                    <div class="detail-section-head">
+                        <span class="section-kicker">{ "Colors" }</span>
+                        <h2>{ "Variant matrix" }</h2>
+                    </div>
+                    <div class="detail-color-grid">
+                        { for PALETTE.into_iter().map(|color| render_color_variant(spec, color)) }
+                    </div>
+                </section>
             </main>
         </div>
     }
@@ -314,11 +325,28 @@ fn primary_variant() -> Option<String> {
     Some("primary".to_owned())
 }
 
+fn secondary_variant() -> Option<String> {
+    Some("secondary".to_owned())
+}
+
+fn tertiary_variant() -> Option<String> {
+    Some("tertiary".to_owned())
+}
+
 fn demo_body(spec: &ComponentSpec) -> Html {
     html! {
         <>
             <strong>{ spec.name }</strong>
             <span>{ spec.description }</span>
+        </>
+    }
+}
+
+fn color_label(color: PaletteColor) -> Html {
+    html! {
+        <>
+            <strong>{ color.label }</strong>
+            <code>{ color.key }</code>
         </>
     }
 }
@@ -333,13 +361,163 @@ macro_rules! standard_demo {
     };
 }
 
+macro_rules! color_component {
+    ($component:ident, $color:expr) => {
+        html! {
+            <$component variant={variant($color)} class="component-detail-color-demo">
+                { color_label($color) }
+            </$component>
+        }
+    };
+}
+
+fn render_color_variant(spec: &ComponentSpec, color: PaletteColor) -> Html {
+    match spec.slug {
+        "button" => html! {
+            <Button variant={variant(color)} classes="component-detail-color-button">
+                { html! { color.label } }
+            </Button>
+        },
+        "card" => html! {
+            <Card variant={variant(color)} title={html! { <span>{ color.label }</span> }} classes="component-detail-color-card">
+                <span>{ format!("card-{}", color.key) }</span>
+            </Card>
+        },
+        "grid" => html! {
+            <Grid variant={variant(color)} columns={Some(GridColumns::Two)} gap={Some(GridGap::Xs)} class="component-detail-color-grid-demo">
+                <span>{ color.label }</span>
+                <code>{ format!("grid-{}", color.key) }</code>
+            </Grid>
+        },
+        "list" => html! {
+            <List variant={variant(color)} class="component-detail-color-list">
+                <span>{ color.label }</span>
+                <code>{ format!("list-{}", color.key) }</code>
+            </List>
+        },
+        "table" => html! {
+            <Table variant={variant(color)} class="component-detail-color-table">
+                <div>{ color.label }</div>
+                <Badge variant={variant(color)}>{ html! { color.key } }</Badge>
+            </Table>
+        },
+        "breadcrumbs" => html! {
+            <Breadcrumbs variant={variant(color)} class="component-detail-color-breadcrumbs">
+                <span>{ "Catalog" }</span>
+                <span>{ "/" }</span>
+                <strong>{ color.label }</strong>
+            </Breadcrumbs>
+        },
+        "pagination" => html! {
+            <Pagination variant={variant(color)} class="component-detail-color-pagination">
+                <span>{ color.label }</span>
+                <button>{ "1" }</button>
+                <button class="is-active">{ "2" }</button>
+            </Pagination>
+        },
+        "stepper" => html! {
+            <Stepper variant={variant(color)} class="component-detail-color-stepper">
+                <span>{ color.label }</span>
+                <div class="stepper-track">
+                    <i>{ "1" }</i>
+                    <b></b>
+                    <i>{ "2" }</i>
+                </div>
+            </Stepper>
+        },
+        "tabs" => html! {
+            <Tabs variant={variant(color)} class="component-detail-color-tabs">
+                <button class="is-active">{ color.label }</button>
+                <button>{ "API" }</button>
+            </Tabs>
+        },
+        "menu" => html! {
+            <Menu variant={variant(color)} class="component-detail-color-menu">
+                <a href="#colors">{ color.label }</a>
+                <a href="#demo">{ color.key }</a>
+            </Menu>
+        },
+        "navbar" => html! {
+            <Navbar variant={variant(color)} class="component-detail-color-navbar">
+                <strong>{ color.label }</strong>
+                <span>{ color.key }</span>
+            </Navbar>
+        },
+        "accordion" => html! {
+            <Accordion variant={variant(color)} class="component-detail-color-demo">
+                <strong>{ color.label }</strong>
+                <span>{ "Accordion" }</span>
+            </Accordion>
+        },
+        "bottom-sheet" => html! {
+            <Bottomsheet variant={variant(color)} class="component-detail-color-demo">
+                <strong>{ color.label }</strong>
+                <span>{ "Bottom sheet" }</span>
+            </Bottomsheet>
+        },
+        "popover" => html! {
+            <Popover variant={variant(color)} class="component-detail-color-demo">
+                <strong>{ color.label }</strong>
+                <span>{ "Popover" }</span>
+            </Popover>
+        },
+        "avatar" => color_component!(Avatar, color),
+        "badge" => color_component!(Badge, color),
+        "chip" => color_component!(Chip, color),
+        "code-block" => color_component!(CodeBlock, color),
+        "collapse" => color_component!(Collapse, color),
+        "markdown-body" => color_component!(MarkdownBody, color),
+        "timeline" => color_component!(Timeline, color),
+        "autocomplete" => color_component!(Autocomplete, color),
+        "cascader" => color_component!(Cascader, color),
+        "checkbox" => color_component!(Checkbox, color),
+        "datepicker" => color_component!(Datepicker, color),
+        "file-upload" => color_component!(FileUpload, color),
+        "form" => color_component!(Form, color),
+        "form-group" => color_component!(FormGroup, color),
+        "input" => color_component!(Input, color),
+        "multi-select" => color_component!(MultiSelect, color),
+        "otp-input" => color_component!(OtpInput, color),
+        "pin-input" => color_component!(PinInput, color),
+        "radio" => color_component!(Radio, color),
+        "rating" => color_component!(Rating, color),
+        "segment-control" => color_component!(SegmentControl, color),
+        "select" => color_component!(Select, color),
+        "slider" => color_component!(Slider, color),
+        "switch" => color_component!(Switch, color),
+        "textarea" => color_component!(Textarea, color),
+        "time-input" => color_component!(TimeInput, color),
+        "tree-select" => color_component!(TreeSelect, color),
+        "alert" => color_component!(Alert, color),
+        "dialog" => color_component!(Dialog, color),
+        "modal" => color_component!(Modal, color),
+        "progress" => color_component!(Progress, color),
+        "skeleton" => color_component!(Skeleton, color),
+        "snackbar" => color_component!(Snackbar, color),
+        "toast" => color_component!(Toast, color),
+        "tooltip" => color_component!(Tooltip, color),
+        "appbar" => color_component!(Appbar, color),
+        "divider" => color_component!(Divider, color),
+        "bottom-navigation" => color_component!(BottomNavigation, color),
+        "circle-menu" => color_component!(CircleMenu, color),
+        "drawer" => color_component!(Drawer, color),
+        "nested-menu" => color_component!(NestedMenu, color),
+        "toggle" => color_component!(Toggle, color),
+        _ => html! {
+            <div class="component-detail-color-demo">
+                { color_label(color) }
+            </div>
+        },
+    }
+}
+
 fn render_demo(spec: &ComponentSpec) -> Html {
     match spec.slug {
         "button" => html! {
             <div class="detail-demo-stack">
                 <Button variant={primary_variant()} classes="component-detail-action">{ "Primary action" }</Button>
-                <Button variant={Some("secondary".to_owned())} classes="component-detail-action">{ "Secondary action" }</Button>
-                <Button r#type={ButtonType::Link} variant={Some("tertiary".to_owned())} href={"#api"} classes="component-detail-action">{ "API link" }</Button>
+                <Button variant={secondary_variant()} classes="component-detail-action">{ "Secondary action" }</Button>
+                <Button r#type={ButtonType::Link} variant={tertiary_variant()} href={"#api"} classes="component-detail-action">{ "API link" }</Button>
             </div>
         },
         "card" => html! {

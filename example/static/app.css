@@ -2103,6 +2103,13 @@ textarea {
     background-size: 32px 32px;
 }
 
+.detail-color-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    min-width: 0;
+}
+
 .detail-demo-stack {
     display: flex;
     flex-wrap: wrap;
@@ -2126,6 +2133,88 @@ textarea {
 
 .component-detail-action {
     min-height: 42px;
+}
+
+.component-detail-color-demo,
+.component-detail-color-card,
+.component-detail-color-grid-demo,
+.component-detail-color-list,
+.component-detail-color-table,
+.component-detail-color-breadcrumbs,
+.component-detail-color-pagination,
+.component-detail-color-stepper,
+.component-detail-color-tabs,
+.component-detail-color-menu,
+.component-detail-color-navbar {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid color-mix(in oklch, var(--component-color, var(--dm-line-strong)) 38%, var(--dm-line));
+    border-radius: 8px;
+    color: var(--component-on-container, var(--dm-paper));
+    background: color-mix(in oklch, var(--component-container, var(--color-surface-container)) 74%, transparent);
+}
+
+.component-detail-color-demo,
+.component-detail-color-card .card-body,
+.component-detail-color-list,
+.component-detail-color-table,
+.component-detail-color-menu,
+.component-detail-color-navbar {
+    display: grid;
+    gap: 8px;
+}
+
+.component-detail-color-button {
+    width: 100%;
+    justify-content: center;
+}
+
+.component-detail-color-grid-demo {
+    align-items: center;
+}
+
+.component-detail-color-grid-demo > *,
+.component-detail-color-list > *,
+.component-detail-color-table > *,
+.component-detail-color-menu > *,
+.component-detail-color-navbar > * {
+    min-width: 0;
+}
+
+.component-detail-color-table {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+}
+
+.component-detail-color-breadcrumbs,
+.component-detail-color-pagination,
+.component-detail-color-stepper,
+.component-detail-color-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.component-detail-color-pagination button,
+.component-detail-color-tabs button {
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid color-mix(in oklch, var(--component-color, var(--dm-line-strong)) 42%, var(--dm-line));
+    border-radius: 999px;
+    color: var(--component-color);
+    background: transparent;
+    font-weight: 800;
+}
+
+.component-detail-color-pagination .is-active,
+.component-detail-color-tabs .is-active {
+    color: var(--component-content);
+    background: var(--component-color);
+}
+
+.component-detail-color-stepper .stepper-track {
+    flex: 1 1 120px;
 }
 
 .component-detail-grid-demo {
