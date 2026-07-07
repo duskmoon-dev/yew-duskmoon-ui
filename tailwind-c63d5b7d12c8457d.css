@@ -277,6 +277,9 @@
   .grid {
     display: grid;
   }
+  .hidden {
+    display: none;
+  }
   .inline {
     display: inline;
   }
@@ -285,6 +288,9 @@
   }
   .inline-grid {
     display: inline-grid;
+  }
+  .list-item {
+    display: list-item;
   }
   .table {
     display: table;
@@ -297,6 +303,9 @@
   }
   .w-full {
     width: 100%;
+  }
+  .transform {
+    transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
   }
   .cursor-pointer {
     cursor: pointer;
@@ -415,6 +424,10 @@
   .gap-8 {
     gap: calc(var(--spacing) * 8);
   }
+  .border {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+  }
   .bg-black\/40 {
     background-color: color-mix(in srgb, #000 40%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
@@ -504,6 +517,9 @@
       --tw-shadow: 0 4px 6px -1px var(--tw-shadow-color, color-mix(in srgb, var(--color-shadow) 10%, transparent)), 0 2px 4px -2px var(--tw-shadow-color, color-mix(in srgb, var(--color-shadow) 10%, transparent));
     }
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .filter {
+    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
   }
   .backdrop-blur-sm {
     --tw-backdrop-blur: blur(var(--blur-sm));
@@ -16583,25 +16599,25 @@ label, th, td {
 input, textarea {
   color: var(--dm-ink);
 }
-:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .file-upload, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .toggle, .tooltip, .tree-select, .typography-token )[class*="-primary"], :where(.typography-primary) {
+:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .tooltip, .tree-select, .typography-token )[class*="-primary"], :where(.typography-primary) {
   --component-color: var(--color-primary);
   --component-content: var(--color-primary-content);
   --component-container: var(--color-primary-container);
   --component-on-container: var(--color-on-primary-container);
 }
-:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .file-upload, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .toggle, .tooltip, .tree-select, .typography-token )[class*="-secondary"], :where(.typography-secondary) {
+:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .tooltip, .tree-select, .typography-token )[class*="-secondary"], :where(.typography-secondary) {
   --component-color: var(--color-secondary);
   --component-content: var(--color-secondary-content);
   --component-container: var(--color-secondary-container);
   --component-on-container: var(--color-on-secondary-container);
 }
-:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .file-upload, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .toggle, .tooltip, .tree-select, .typography-token )[class*="-tertiary"], :where(.typography-tertiary) {
+:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .tooltip, .tree-select, .typography-token )[class*="-tertiary"], :where(.typography-tertiary) {
   --component-color: var(--color-tertiary);
   --component-content: var(--color-tertiary-content);
   --component-container: var(--color-tertiary-container);
   --component-on-container: var(--color-on-tertiary-container);
 }
-:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .file-upload, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .toggle, .tooltip, .tree-select, .typography-token )[class*="-accent"], :where(.typography-accent) {
+:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .tooltip, .tree-select, .typography-token )[class*="-accent"], :where(.typography-accent) {
   --component-color: var(--color-accent);
   --component-content: var(--color-accent-content);
   --component-container: var(--color-accent);
@@ -16610,7 +16626,7 @@ input, textarea {
   }
   --component-on-container: var(--color-accent-content);
 }
-:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .file-upload, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .toggle, .tooltip, .tree-select, .typography-token )[class*="-neutral"], :where(.typography-neutral) {
+:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .tooltip, .tree-select, .typography-token )[class*="-neutral"], :where(.typography-neutral) {
   --component-color: var(--color-neutral);
   --component-content: var(--color-neutral-content);
   --component-container: var(--color-neutral);
@@ -16619,31 +16635,31 @@ input, textarea {
   }
   --component-on-container: var(--color-neutral-content);
 }
-:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .file-upload, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .toggle, .tooltip, .tree-select, .typography-token )[class*="-base"], :where(.typography-base) {
+:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .tooltip, .tree-select, .typography-token )[class*="-base"], :where(.typography-base) {
   --component-color: var(--color-base-300);
   --component-content: var(--color-base-content);
   --component-container: var(--color-base-200);
   --component-on-container: var(--color-base-content);
 }
-:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .file-upload, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .toggle, .tooltip, .tree-select, .typography-token )[class*="-info"], :where(.typography-info) {
+:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .tooltip, .tree-select, .typography-token )[class*="-info"], :where(.typography-info) {
   --component-color: var(--color-info);
   --component-content: var(--color-info-content);
   --component-container: var(--color-info-container);
   --component-on-container: var(--color-on-info-container);
 }
-:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .file-upload, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .toggle, .tooltip, .tree-select, .typography-token )[class*="-success"], :where(.typography-success) {
+:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .tooltip, .tree-select, .typography-token )[class*="-success"], :where(.typography-success) {
   --component-color: var(--color-success);
   --component-content: var(--color-success-content);
   --component-container: var(--color-success-container);
   --component-on-container: var(--color-on-success-container);
 }
-:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .file-upload, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .toggle, .tooltip, .tree-select, .typography-token )[class*="-warning"], :where(.typography-warning) {
+:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .tooltip, .tree-select, .typography-token )[class*="-warning"], :where(.typography-warning) {
   --component-color: var(--color-warning);
   --component-content: var(--color-warning-content);
   --component-container: var(--color-warning-container);
   --component-on-container: var(--color-on-warning-container);
 }
-:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .file-upload, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .toggle, .tooltip, .tree-select, .typography-token )[class*="-error"], :where(.typography-error) {
+:where( .accordion, .alert, .app-header, .appbar, .autocomplete, .avatar, .badge, .bottom-navigation, .bottomsheet, .breadcrumbs, .breadcrumb-token, .btn, .card, .cascader, .chat, .checkbox, .chip, .circle-menu, .code-block, .collapse, .color-list-row, .datepicker, .dialog, .divider, .drawer, .form, .form-group, .grid, .grid-demo-tile, .input, .link, .list, .markdown-body, .menu, .menu-color-item, .modal, .multi-select, .navbar, .navigation, .nested-menu, .otp-input, .pagination, .pin-input, .popover, .progress, .radio, .rating, .segment-control, .select, .skeleton, .slider, .snackbar, .stepper, .switch, .table, .table-color-row, .tabs, .textarea, .theme-controller, .time-input, .timeline, .toast, .tooltip, .tree-select, .typography-token )[class*="-error"], :where(.typography-error) {
   --component-color: var(--color-error);
   --component-content: var(--color-error-content);
   --component-container: var(--color-error-container);
@@ -17677,6 +17693,31 @@ input, textarea {
     padding: 18px;
   }
 }
+@property --tw-rotate-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-y {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-z {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-y {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-border-style {
+  syntax: "*";
+  inherits: false;
+  initial-value: solid;
+}
 @property --tw-leading {
   syntax: "*";
   inherits: false;
@@ -17770,6 +17811,59 @@ input, textarea {
   inherits: false;
   initial-value: 0 0 #0000;
 }
+@property --tw-blur {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-brightness {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-contrast {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-grayscale {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-hue-rotate {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-invert {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-opacity {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-saturate {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-sepia {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-drop-shadow {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-drop-shadow-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-drop-shadow-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+@property --tw-drop-shadow-size {
+  syntax: "*";
+  inherits: false;
+}
 @property --tw-backdrop-blur {
   syntax: "*";
   inherits: false;
@@ -17813,6 +17907,12 @@ input, textarea {
 @layer properties {
   @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
+      --tw-rotate-x: initial;
+      --tw-rotate-y: initial;
+      --tw-rotate-z: initial;
+      --tw-skew-x: initial;
+      --tw-skew-y: initial;
+      --tw-border-style: solid;
       --tw-leading: initial;
       --tw-font-weight: initial;
       --tw-ordinal: initial;
@@ -17834,6 +17934,19 @@ input, textarea {
       --tw-ring-offset-width: 0px;
       --tw-ring-offset-color: #fff;
       --tw-ring-offset-shadow: 0 0 #0000;
+      --tw-blur: initial;
+      --tw-brightness: initial;
+      --tw-contrast: initial;
+      --tw-grayscale: initial;
+      --tw-hue-rotate: initial;
+      --tw-invert: initial;
+      --tw-opacity: initial;
+      --tw-saturate: initial;
+      --tw-sepia: initial;
+      --tw-drop-shadow: initial;
+      --tw-drop-shadow-color: initial;
+      --tw-drop-shadow-alpha: 100%;
+      --tw-drop-shadow-size: initial;
       --tw-backdrop-blur: initial;
       --tw-backdrop-brightness: initial;
       --tw-backdrop-contrast: initial;
