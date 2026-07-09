@@ -34,6 +34,7 @@ pub fn component_page(slug: &str) -> Option<ComponentPage> {
         "input" => input::page(spec),
         "list" => list::page(spec),
         "markdown-body" => markdown_body::page(spec),
+        "markdown-input" => markdown_input::page(spec),
         "menu" => menu::page(spec),
         "modal" => modal::page(spec),
         "multi-select" => multi_select::page(spec),
@@ -95,6 +96,7 @@ mod grid;
 mod input;
 mod list;
 mod markdown_body;
+mod markdown_input;
 mod menu;
 mod modal;
 mod multi_select;

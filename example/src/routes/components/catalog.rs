@@ -275,6 +275,16 @@ pub const COMPONENTS: &[ComponentSpec] = &[
         api_kind: ApiKind::Standard,
     },
     ComponentSpec {
+        slug: "markdown-input",
+        name: "Markdown Input",
+        category: "Data Entry",
+        description: "Markdown textarea with preview.",
+        docs: "Use Markdown Input when users need to write markdown and quickly inspect the rendered output before submitting.",
+        component_name: "MarkdownInput",
+        class_name: "markdown-input",
+        api_kind: ApiKind::Standard,
+    },
+    ComponentSpec {
         slug: "multi-select",
         name: "Multi-Select",
         category: "Data Entry",

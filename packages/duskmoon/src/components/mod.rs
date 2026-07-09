@@ -82,6 +82,9 @@ pub use list::List;
 pub mod markdown_body;
 pub use markdown_body::MarkdownBody;
 
+pub mod markdown_input;
+pub use markdown_input::{MarkdownInput, MarkdownInputView};
+
 pub mod menu;
 pub use menu::Menu;
 
