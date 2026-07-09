@@ -42,6 +42,7 @@ pub use circle_menu::CircleMenu;
 
 pub mod code_block;
 pub use code_block::CodeBlock;
+pub use yew_code_engine::{CodeEditor, CodeEditorProps, CodeLanguage, TextDocument};
 
 pub mod collapse;
 pub use collapse::Collapse;

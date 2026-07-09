@@ -820,6 +820,7 @@ textarea {
     .chip,
     .circle-menu,
     .code-block,
+    .code-engine,
     .collapse,
     .color-list-row,
     .datepicker,
@@ -894,6 +895,7 @@ textarea {
     .chip,
     .circle-menu,
     .code-block,
+    .code-engine,
     .collapse,
     .color-list-row,
     .datepicker,
@@ -968,6 +970,7 @@ textarea {
     .chip,
     .circle-menu,
     .code-block,
+    .code-engine,
     .collapse,
     .color-list-row,
     .datepicker,
@@ -1042,6 +1045,7 @@ textarea {
     .chip,
     .circle-menu,
     .code-block,
+    .code-engine,
     .collapse,
     .color-list-row,
     .datepicker,
@@ -1116,6 +1120,7 @@ textarea {
     .chip,
     .circle-menu,
     .code-block,
+    .code-engine,
     .collapse,
     .color-list-row,
     .datepicker,
@@ -1190,6 +1195,7 @@ textarea {
     .chip,
     .circle-menu,
     .code-block,
+    .code-engine,
     .collapse,
     .color-list-row,
     .datepicker,
@@ -1264,6 +1270,7 @@ textarea {
     .chip,
     .circle-menu,
     .code-block,
+    .code-engine,
     .collapse,
     .color-list-row,
     .datepicker,
@@ -1338,6 +1345,7 @@ textarea {
     .chip,
     .circle-menu,
     .code-block,
+    .code-engine,
     .collapse,
     .color-list-row,
     .datepicker,
@@ -1412,6 +1420,7 @@ textarea {
     .chip,
     .circle-menu,
     .code-block,
+    .code-engine,
     .collapse,
     .color-list-row,
     .datepicker,
@@ -1486,6 +1495,7 @@ textarea {
     .chip,
     .circle-menu,
     .code-block,
+    .code-engine,
     .collapse,
     .color-list-row,
     .datepicker,
@@ -1686,6 +1696,108 @@ textarea {
 .color-textarea {
     min-height: 78px;
     align-items: flex-start;
+}
+
+.code-engine {
+    --component-color: var(--color-primary);
+    --component-content: var(--color-primary-content);
+    --component-container: var(--color-primary-container);
+    --component-on-container: var(--color-on-primary-container);
+    display: flex;
+    width: min(100%, 860px);
+    min-width: 0;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid color-mix(in oklch, var(--component-color) 36%, var(--dm-line));
+    border-radius: 8px;
+    color: var(--dm-paper);
+    background: color-mix(in oklch, var(--component-container) 36%, var(--color-surface-container));
+}
+
+.code-engine-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    min-height: 42px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--dm-line);
+    background: color-mix(in oklch, var(--color-surface-container-high) 72%, transparent);
+}
+
+.code-engine-language {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 8px;
+    border: 1px solid color-mix(in oklch, var(--component-color) 52%, transparent);
+    border-radius: 6px;
+    color: var(--component-content);
+    background: var(--component-color);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.code-engine-body {
+    display: grid;
+    grid-template-columns: minmax(48px, auto) minmax(0, 1fr);
+    min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px);
+}
+
+.code-engine-body.without-line-numbers {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.code-engine-gutter {
+    display: flex;
+    min-width: 48px;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 16px 10px;
+    border-right: 1px solid var(--dm-line);
+    color: var(--dm-paper-muted);
+    background: color-mix(in oklch, var(--color-surface) 50%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    user-select: none;
+}
+
+.code-engine-line-number {
+    min-height: 1.55em;
+    font-variant-numeric: tabular-nums;
+}
+
+.code-engine-input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px);
+    padding: 16px;
+    border: 0;
+    outline: 0;
+    color: var(--dm-paper);
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    resize: vertical;
+    tab-size: 4;
+    white-space: pre;
+}
+
+.code-engine-input::placeholder {
+    color: var(--dm-paper-muted);
+}
+
+.code-engine-input:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--component-color);
+}
+
+.code-engine.is-readonly .code-engine-input {
+    cursor: default;
+    background: color-mix(in oklch, var(--color-surface-container-high) 48%, transparent);
 }
 
 .markdown-input {
@@ -3432,6 +3544,7 @@ textarea {
 .component-detail-color-tabs,
 .component-detail-color-menu,
 .component-detail-color-navbar,
+.component-detail-color-code-engine,
 .component-detail-color-markdown-input {
     min-width: 0;
     padding: 12px;

@@ -145,6 +145,16 @@ pub const COMPONENTS: &[ComponentSpec] = &[
         api_kind: ApiKind::Standard,
     },
     ComponentSpec {
+        slug: "code-engine",
+        name: "Code Engine",
+        category: "Data Entry",
+        description: "Pure Rust code editor foundation.",
+        docs: "Use Code Engine when users need line-aware source editing through the pure Rust yew-code-engine crate.",
+        component_name: "CodeEditor",
+        class_name: "code-engine",
+        api_kind: ApiKind::Standard,
+    },
+    ComponentSpec {
         slug: "collapse",
         name: "Collapse",
         category: "Data Display",

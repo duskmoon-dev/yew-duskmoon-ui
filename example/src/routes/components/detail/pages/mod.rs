@@ -21,6 +21,7 @@ pub fn component_page(slug: &str) -> Option<ComponentPage> {
         "chip" => chip::page(spec),
         "circle-menu" => circle_menu::page(spec),
         "code-block" => code_block::page(spec),
+        "code-engine" => code_engine::page(spec),
         "collapse" => collapse::page(spec),
         "datepicker" => datepicker::page(spec),
         "dialog" => dialog::page(spec),
@@ -83,6 +84,7 @@ mod checkbox;
 mod chip;
 mod circle_menu;
 mod code_block;
+mod code_engine;
 mod collapse;
 mod datepicker;
 mod dialog;

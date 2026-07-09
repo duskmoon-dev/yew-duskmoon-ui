@@ -1,0 +1,24 @@
+# yew-code-engine
+
+`yew-code-engine` is the pure Rust editor foundation used by `yew-duskmoon`.
+
+The first milestone intentionally exposes a small but stable surface:
+
+- `TextDocument` for line-aware source text operations
+- `CodeLanguage` for editor language metadata
+- `CodeEditor` for a Yew editor component with controlled and uncontrolled value modes
+
+The crate is structured to grow into a fuller editor engine over time without making
+`yew-duskmoon` own the editor internals.
+
+```rust
+use yew::prelude::*;
+use yew_code_engine::{CodeEditor, CodeLanguage};
+
+html! {
+    <CodeEditor
+        language={CodeLanguage::Rust}
+        default_value={"fn main() {\n    println!(\"hello\");\n}"}
+    />
+}
+```
