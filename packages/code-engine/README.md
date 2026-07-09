@@ -1,6 +1,6 @@
-# yew-code-engine
+# code-engine
 
-`yew-code-engine` is the pure Rust editor foundation used by `yew-duskmoon`.
+`code-engine` is the pure Rust editor foundation used by `yew-duskmoon`.
 
 The first milestone intentionally exposes a small but stable surface:
 
@@ -13,7 +13,7 @@ The crate is structured to grow into a fuller editor engine over time without ma
 
 ```rust
 use yew::prelude::*;
-use yew_code_engine::{CodeEditor, CodeLanguage};
+use code_engine::{CodeEditor, CodeLanguage};
 
 html! {
     <CodeEditor

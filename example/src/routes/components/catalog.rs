@@ -149,7 +149,7 @@ pub const COMPONENTS: &[ComponentSpec] = &[
         name: "Code Engine",
         category: "Data Entry",
         description: "Pure Rust code editor foundation.",
-        docs: "Use Code Engine when users need line-aware source editing through the pure Rust yew-code-engine crate.",
+        docs: "Use Code Engine when users need line-aware source editing through the pure Rust code-engine crate.",
         component_name: "CodeEditor",
         class_name: "code-engine",
         api_kind: ApiKind::Standard,

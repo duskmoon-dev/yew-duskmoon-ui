@@ -74,7 +74,7 @@ const CODE_ENGINE_API: &[ApiRow] = &[
 ];
 
 const SAMPLE_RUST: &str = r#"use yew::prelude::*;
-use yew_code_engine::{CodeEditor, CodeLanguage};
+use code_engine::{CodeEditor, CodeLanguage};
 
 #[function_component(App)]
 pub fn app() -> Html {
