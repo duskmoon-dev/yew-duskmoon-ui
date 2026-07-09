@@ -16791,6 +16791,146 @@ input, textarea {
   min-height: 78px;
   align-items: flex-start;
 }
+.markdown-input {
+  --component-color: var(--color-primary);
+  --component-content: var(--color-primary-content);
+  --component-container: var(--color-primary-container);
+  --component-on-container: var(--color-on-primary-container);
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 780px);
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--component-color);
+  @supports (color: color-mix(in lab, red, red)) {
+    border: 1px solid color-mix(in oklch, var(--component-color) 36%, var(--dm-line));
+  }
+  border-radius: 8px;
+  color: var(--dm-paper);
+  background: var(--component-container);
+  @supports (color: color-mix(in lab, red, red)) {
+    background: color-mix(in oklch, var(--component-container) 42%, var(--color-surface-container));
+  }
+}
+.markdown-input-primary {
+  --component-color: var(--color-primary);
+  --component-content: var(--color-primary-content);
+  --component-container: var(--color-primary-container);
+  --component-on-container: var(--color-on-primary-container);
+}
+.markdown-input-secondary {
+  --component-color: var(--color-secondary);
+  --component-content: var(--color-secondary-content);
+  --component-container: var(--color-secondary-container);
+  --component-on-container: var(--color-on-secondary-container);
+}
+.markdown-input-tertiary {
+  --component-color: var(--color-tertiary);
+  --component-content: var(--color-tertiary-content);
+  --component-container: var(--color-tertiary-container);
+  --component-on-container: var(--color-on-tertiary-container);
+}
+.markdown-input-accent {
+  --component-color: var(--color-accent);
+  --component-content: var(--color-accent-content);
+  --component-container: var(--color-accent);
+  --component-on-container: var(--color-accent-content);
+}
+.markdown-input-neutral {
+  --component-color: var(--color-neutral);
+  --component-content: var(--color-neutral-content);
+  --component-container: var(--color-neutral);
+  --component-on-container: var(--color-neutral-content);
+}
+.markdown-input-info {
+  --component-color: var(--color-info);
+  --component-content: var(--color-info-content);
+  --component-container: var(--color-info);
+  --component-on-container: var(--color-info-content);
+}
+.markdown-input-success {
+  --component-color: var(--color-success);
+  --component-content: var(--color-success-content);
+  --component-container: var(--color-success);
+  --component-on-container: var(--color-success-content);
+}
+.markdown-input-warning {
+  --component-color: var(--color-warning);
+  --component-content: var(--color-warning-content);
+  --component-container: var(--color-warning);
+  --component-on-container: var(--color-warning-content);
+}
+.markdown-input-error {
+  --component-color: var(--color-error);
+  --component-content: var(--color-error-content);
+  --component-container: var(--color-error);
+  --component-on-container: var(--color-error-content);
+}
+.markdown-input-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid var(--dm-line);
+  background: var(--color-surface-container-high);
+  @supports (color: color-mix(in lab, red, red)) {
+    background: color-mix(in oklch, var(--color-surface-container-high) 72%, transparent);
+  }
+}
+.markdown-input-tab {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--dm-paper-muted);
+  background: transparent;
+  font-weight: 800;
+  cursor: pointer;
+}
+.markdown-input-tab:hover {
+  color: var(--dm-paper);
+  border-color: var(--dm-line-strong);
+}
+.markdown-input-tab.is-active {
+  color: var(--component-content);
+  border-color: var(--component-color);
+  background: var(--component-color);
+}
+.markdown-input-field {
+  display: block;
+  width: 100%;
+  min-height: 320px;
+  padding: 16px;
+  border: 0;
+  outline: 0;
+  color: var(--dm-paper);
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+.markdown-input-field::placeholder {
+  color: var(--dm-paper-muted);
+}
+.markdown-input-field:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--component-color);
+}
+.markdown-input-field[readonly] {
+  cursor: default;
+  background: var(--color-surface-container-high);
+  @supports (color: color-mix(in lab, red, red)) {
+    background: color-mix(in oklch, var(--color-surface-container-high) 48%, transparent);
+  }
+}
+.markdown-input-preview {
+  min-height: 320px;
+  padding: 16px;
+  overflow: auto;
+  background: var(--color-surface);
+  @supports (color: color-mix(in lab, red, red)) {
+    background: color-mix(in oklch, var(--color-surface) 44%, transparent);
+  }
+}
 .control-samples {
   display: flex;
   align-items: center;
@@ -18551,7 +18691,7 @@ input, textarea {
 .component-detail-action {
   min-height: 42px;
 }
-.component-detail-color-demo, .component-detail-color-card, .component-detail-color-grid-demo, .component-detail-color-list, .component-detail-color-table, .component-detail-color-breadcrumbs, .component-detail-color-pagination, .component-detail-color-stepper, .component-detail-color-tabs, .component-detail-color-menu, .component-detail-color-navbar {
+.component-detail-color-demo, .component-detail-color-card, .component-detail-color-grid-demo, .component-detail-color-list, .component-detail-color-table, .component-detail-color-breadcrumbs, .component-detail-color-pagination, .component-detail-color-stepper, .component-detail-color-tabs, .component-detail-color-menu, .component-detail-color-navbar, .component-detail-color-markdown-input {
   min-width: 0;
   padding: 12px;
   border: 1px solid var(--component-color, var(--dm-line-strong));
