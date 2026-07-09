@@ -71,21 +71,39 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
         "code-engine-body",
         (!props.show_line_numbers).then_some("without-line-numbers")
     );
+    let body_style = if props.show_line_numbers {
+        "display: grid; grid-template-columns: minmax(48px, auto) minmax(0, 1fr); min-width: 0;"
+    } else {
+        "display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0;"
+    };
+    let row_count = props.rows.max(1);
 
     html! {
         <div
             class={classes}
             data-language={props.language.as_str()}
-            style={format!("--code-engine-rows: {}", props.rows.max(1))}
+            style={format!("--code-engine-rows: {row_count}; display: flex; width: min(100%, 860px); min-width: 0; flex-direction: column; overflow: hidden;")}
         >
-            <div class="code-engine-header">
+            <div
+                class="code-engine-header"
+                style="display: flex; align-items: center; justify-content: flex-end; min-width: 0;"
+            >
                 <span class="code-engine-language">{ props.language.label() }</span>
             </div>
-            <div class={body_classes}>
+            <div class={body_classes} style={body_style}>
                 if props.show_line_numbers {
-                    <div class="code-engine-gutter" aria-hidden="true">
+                    <div
+                        class="code-engine-gutter"
+                        aria-hidden="true"
+                        style="display: flex; min-width: 48px; flex-direction: column; align-items: flex-end; box-sizing: border-box;"
+                    >
                         { for (1..=line_count).map(|line| html! {
-                            <span class="code-engine-line-number">{ line }</span>
+                            <span
+                                class="code-engine-line-number"
+                                style="display: block; min-height: 1.55em; font-variant-numeric: tabular-nums;"
+                            >
+                                { line }
+                            </span>
                         }) }
                     </div>
                 }
@@ -95,8 +113,10 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
                     placeholder={props.placeholder.clone()}
                     readonly={props.readonly}
                     spellcheck="false"
-                    rows={props.rows.max(1).to_string()}
+                    rows={row_count.to_string()}
+                    wrap="off"
                     aria-label={props.aria_label.clone()}
+                    style="display: block; width: 100%; min-width: 0; box-sizing: border-box; resize: vertical; white-space: pre;"
                     oninput={oninput}
                 />
             </div>
