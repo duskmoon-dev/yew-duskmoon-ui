@@ -1,6 +1,6 @@
 use yew::prelude::*;
 use yew_duskmoon::typography::TypographyLevel;
-use yew_duskmoon::{Badge, Card, Chip, List, Table, Typography};
+use yew_duskmoon::{Badge, Card, Chip, DmMarkdown, List, Table, Typography};
 
 use super::palette::{variant, PALETTE};
 
@@ -44,6 +44,18 @@ pub fn data_display_component() -> Html {
                                     <Badge variant={variant(color)}>{ html! { color.key } }</Badge>
                                 </div>
                             </List>
+                        }) }
+                    </div>
+                </Card>
+
+                <Card title={html! { <Typography level={TypographyLevel::H4}>{"DmMarkdown Component"}</Typography> }} classes="component-card">
+                    <div class="color-grid markdown-color-grid">
+                        { for PALETTE.into_iter().map(|color| html! {
+                            <DmMarkdown
+                                variant={variant(color)}
+                                class="markdown-token-card"
+                                markdown={format!("**{}** markdown\n\n- [x] Rendered from source\n- Uses `markdown-body-{}`", color.label, color.key)}
+                            />
                         }) }
                     </div>
                 </Card>

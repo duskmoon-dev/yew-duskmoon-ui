@@ -1929,6 +1929,1168 @@ textarea {
     color: var(--component-color);
 }
 
+.markdown-body .dm-code-block {
+    --dm-syntax-text: #d7dee9;
+    --dm-syntax-keyword: #ffb454;
+    --dm-syntax-function: #82aaff;
+    --dm-syntax-type: #c792ea;
+    --dm-syntax-builtin: #7dd3fc;
+    --dm-syntax-string: #a5d977;
+    --dm-syntax-number: #f78c6c;
+    --dm-syntax-literal: #ff8fa3;
+    --dm-syntax-comment: #7a869a;
+
+    margin-block-end: 1rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in oklch, var(--component-color, var(--dm-copper)) 38%, var(--dm-line));
+    border-radius: 8px;
+    background: #101720;
+}
+
+.markdown-body .dm-code-block-header {
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 12px;
+    border-bottom: 1px solid color-mix(in oklch, var(--component-color, var(--dm-copper)) 30%, var(--dm-line));
+    color: color-mix(in oklch, var(--component-color, var(--dm-copper)) 88%, white);
+    background: color-mix(in oklch, var(--color-surface-container-highest) 84%, black);
+    font-size: 0.76rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.markdown-body .dm-code-block pre {
+    margin: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.markdown-body .dm-code-block code {
+    display: block;
+    color: var(--dm-syntax-text);
+}
+
+.markdown-body .dm-token-keyword {
+    color: var(--dm-syntax-keyword);
+    font-weight: 800;
+}
+
+.markdown-body .dm-token-function {
+    color: var(--dm-syntax-function);
+}
+
+.markdown-body .dm-token-type {
+    color: var(--dm-syntax-type);
+}
+
+.markdown-body .dm-token-builtin {
+    color: var(--dm-syntax-builtin);
+}
+
+.markdown-body .dm-token-string {
+    color: var(--dm-syntax-string);
+}
+
+.markdown-body .dm-token-number,
+.markdown-body .dm-token-literal {
+    color: var(--dm-syntax-number);
+}
+
+.markdown-body .dm-token-literal {
+    color: var(--dm-syntax-literal);
+}
+
+.markdown-body .dm-token-comment {
+    color: var(--dm-syntax-comment);
+    font-style: italic;
+}
+
+.markdown-body .dm-mermaid-chart {
+    --dm-mermaid-accent: color-mix(in oklch, var(--component-color, var(--dm-copper)) 80%, white);
+    --dm-mermaid-panel: color-mix(in oklch, var(--component-container, var(--color-surface-container-high)) 84%, transparent);
+    --dm-mermaid-slice-1: #82aaff;
+    --dm-mermaid-slice-2: #a5d977;
+    --dm-mermaid-slice-3: #ffb454;
+    --dm-mermaid-slice-4: #c792ea;
+    --dm-mermaid-slice-5: #7dd3fc;
+    --dm-mermaid-slice-6: #ff8fa3;
+
+    margin-block: 1rem;
+    padding: 14px;
+    overflow-x: auto;
+    border: 1px solid color-mix(in oklch, var(--component-color, var(--dm-copper)) 42%, var(--dm-line));
+    border-radius: 8px;
+    color: var(--component-on-container, var(--dm-paper));
+    background:
+        linear-gradient(135deg, color-mix(in oklch, var(--component-container, var(--color-primary-container)) 44%, transparent), transparent 58%),
+        color-mix(in oklch, var(--color-surface-container) 88%, black);
+}
+
+.markdown-body .dm-mermaid-chart-title {
+    margin-bottom: 10px;
+    color: color-mix(in oklch, var(--component-color, var(--dm-copper)) 90%, white);
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.markdown-body .dm-mermaid-chart svg {
+    min-width: 560px;
+    width: 100%;
+    max-width: 760px;
+}
+
+.markdown-body .dm-mermaid-edge {
+    fill: none;
+    stroke: var(--dm-mermaid-accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+.markdown-body .dm-mermaid-arrow {
+    fill: var(--dm-mermaid-accent);
+}
+
+.markdown-body .dm-mermaid-node rect {
+    fill: var(--dm-mermaid-panel);
+    stroke: color-mix(in oklch, var(--component-color, var(--dm-copper)) 52%, var(--dm-line));
+    stroke-width: 1.5;
+}
+
+.markdown-body .dm-mermaid-node text {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-swimlane-lane rect {
+    fill: color-mix(in oklch, var(--color-surface-container-high) 68%, transparent);
+    stroke: color-mix(in oklch, var(--dm-line-strong) 72%, transparent);
+    stroke-width: 1;
+}
+
+.markdown-body .dm-swimlane-lane text {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+    font-size: 0.74rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-swimlane-edge {
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 58%, transparent);
+    stroke-width: 1.7;
+}
+
+.markdown-body .dm-swimlane-edge-label {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 82%, transparent);
+    stroke: color-mix(in oklch, var(--color-surface-container-high) 92%, black);
+    stroke-width: 5;
+    paint-order: stroke;
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-swimlane-node rect {
+    fill: color-mix(in oklch, var(--color-surface) 90%, black);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 58%, transparent);
+    stroke-width: 1.2;
+}
+
+.markdown-body .dm-swimlane-node text {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-class-namespace rect {
+    fill: color-mix(in oklch, var(--color-surface-container-high) 66%, transparent);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 46%, transparent);
+    stroke-width: 1.2;
+}
+
+.markdown-body .dm-class-namespace text {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-class-relation {
+    fill: none;
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 64%, transparent);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+}
+
+.markdown-body .dm-class-relation-label {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 88%, transparent);
+    stroke: color-mix(in oklch, var(--color-surface-container-high) 94%, black);
+    stroke-width: 5;
+    paint-order: stroke;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-class-node rect {
+    fill: color-mix(in oklch, var(--color-surface) 90%, black);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 68%, transparent);
+    stroke-width: 1.4;
+}
+
+.markdown-body .dm-class-node line {
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 52%, transparent);
+    stroke-width: 1.1;
+}
+
+.markdown-body .dm-class-node text {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+}
+
+.markdown-body .dm-class-name {
+    font-size: 0.9rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-class-member {
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.markdown-body .dm-state-transition {
+    fill: none;
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 70%, transparent);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+}
+
+.markdown-body .dm-state-label {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 86%, transparent);
+    stroke: color-mix(in oklch, var(--color-surface-container-high) 94%, black);
+    stroke-width: 5;
+    paint-order: stroke;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-state-start {
+    fill: var(--component-on-container, var(--dm-paper));
+}
+
+.markdown-body .dm-state-end circle:first-child {
+    fill: transparent;
+    stroke: var(--component-on-container, var(--dm-paper));
+    stroke-width: 3;
+}
+
+.markdown-body .dm-state-end circle:last-child {
+    fill: var(--component-on-container, var(--dm-paper));
+}
+
+.markdown-body .dm-state-node rect {
+    fill: color-mix(in oklch, var(--color-surface) 90%, black);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 72%, transparent);
+    stroke-width: 1.4;
+}
+
+.markdown-body .dm-state-node text {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-er-relation {
+    fill: none;
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 68%, transparent);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+}
+
+.markdown-body .dm-er-label,
+.markdown-body .dm-er-cardinality {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 88%, transparent);
+    stroke: color-mix(in oklch, var(--color-surface-container-high) 94%, black);
+    stroke-width: 5;
+    paint-order: stroke;
+    font-family: var(--font-body);
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-er-cardinality {
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-er-entity rect {
+    fill: color-mix(in oklch, var(--color-surface) 90%, black);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 68%, transparent);
+    stroke-width: 1.3;
+}
+
+.markdown-body .dm-er-entity text {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+}
+
+.markdown-body .dm-er-name {
+    font-size: 0.92rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-er-attribute {
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.markdown-body .dm-journey-title {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-journey-actor,
+.markdown-body .dm-journey-section,
+.markdown-body .dm-journey-task-label,
+.markdown-body .dm-journey-score-text {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+    font-weight: 800;
+}
+
+.markdown-body .dm-journey-actor,
+.markdown-body .dm-journey-section {
+    font-size: 0.74rem;
+}
+
+.markdown-body .dm-journey-section {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 72%, transparent);
+    text-transform: uppercase;
+}
+
+.markdown-body .dm-journey-task {
+    fill: color-mix(in oklch, var(--color-surface) 86%, black);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 48%, transparent);
+    stroke-width: 1.1;
+}
+
+.markdown-body .dm-journey-task-label {
+    font-size: 0.76rem;
+}
+
+.markdown-body .dm-journey-axis,
+.markdown-body .dm-journey-drop {
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 62%, transparent);
+    stroke-width: 1.3;
+}
+
+.markdown-body .dm-journey-drop {
+    stroke-dasharray: 4 4;
+}
+
+.markdown-body .dm-journey-axis-arrow {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 72%, transparent);
+}
+
+.markdown-body .dm-journey-score {
+    fill: color-mix(in oklch, var(--color-surface-container-high) 96%, white);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 62%, transparent);
+    stroke-width: 1.4;
+}
+
+.markdown-body .dm-journey-score-text {
+    fill: color-mix(in oklch, var(--color-surface) 88%, black);
+    font-size: 0.72rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-journey-actor-1 {
+    fill: #9bd18f;
+}
+
+.markdown-body .dm-journey-actor-2 {
+    fill: #79ff22;
+}
+
+.markdown-body .dm-journey-actor-3 {
+    fill: #ffb454;
+}
+
+.markdown-body .dm-gantt-title,
+.markdown-body .dm-gantt-section,
+.markdown-body .dm-gantt-date,
+.markdown-body .dm-gantt-task {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+}
+
+.markdown-body .dm-gantt-title {
+    font-size: 0.96rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-gantt-axis,
+.markdown-body .dm-gantt-tick {
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 50%, transparent);
+    stroke-width: 1.1;
+}
+
+.markdown-body .dm-gantt-section-band {
+    fill: color-mix(in oklch, var(--component-container, var(--color-surface-container-high)) 52%, transparent);
+}
+
+.markdown-body .dm-gantt-section {
+    font-size: 0.72rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-gantt-date {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 70%, transparent);
+    font-size: 0.64rem;
+    font-weight: 700;
+}
+
+.markdown-body .dm-gantt-bar {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 38%, transparent);
+    stroke: var(--component-on-container, var(--dm-paper));
+    stroke-width: 1.1;
+}
+
+.markdown-body .dm-gantt-bar-done {
+    fill: color-mix(in oklch, var(--color-success) 54%, transparent);
+}
+
+.markdown-body .dm-gantt-bar-active {
+    fill: color-mix(in oklch, var(--component-color, var(--dm-copper)) 54%, transparent);
+}
+
+.markdown-body .dm-gantt-bar-crit {
+    fill: color-mix(in oklch, var(--color-error) 54%, transparent);
+}
+
+.markdown-body .dm-gantt-task {
+    font-size: 0.64rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-sequence-lane rect {
+    fill: var(--dm-mermaid-panel);
+    stroke: color-mix(in oklch, var(--component-color, var(--dm-copper)) 48%, var(--dm-line));
+}
+
+.markdown-body .dm-sequence-lane line {
+    stroke: color-mix(in oklch, var(--dm-line-strong) 78%, transparent);
+    stroke-dasharray: 5 5;
+}
+
+.markdown-body .dm-sequence-message line {
+    stroke: var(--dm-mermaid-accent);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+}
+
+.markdown-body .dm-sequence-lane text,
+.markdown-body .dm-sequence-message text {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-sequence-message text {
+    fill: color-mix(in oklch, var(--dm-mermaid-accent) 86%, white);
+}
+
+.markdown-body .dm-mermaid-pie-layout {
+    display: grid;
+    grid-template-columns: minmax(160px, 220px) minmax(220px, 1fr);
+    gap: 18px;
+    align-items: center;
+    min-width: 520px;
+}
+
+.markdown-body .dm-mermaid-pie-graphic {
+    aspect-ratio: 1;
+    width: min(220px, 100%);
+    border: 1px solid color-mix(in oklch, var(--component-color, var(--dm-copper)) 42%, var(--dm-line));
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 16px color-mix(in oklch, var(--color-surface) 46%, transparent);
+}
+
+.markdown-body .dm-mermaid-pie-layout ul,
+.markdown-body .dm-mermaid-timeline ol {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.markdown-body .dm-mermaid-pie-layout li {
+    display: grid;
+    grid-template-columns: 14px minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid var(--dm-line);
+    border-radius: 8px;
+    background: color-mix(in oklch, var(--color-surface-container-high) 64%, transparent);
+}
+
+.markdown-body .dm-mermaid-pie-layout li strong,
+.markdown-body .dm-mermaid-pie-layout li span:last-child {
+    min-width: 0;
+    color: var(--component-on-container, var(--dm-paper));
+}
+
+.markdown-body .dm-mermaid-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.markdown-body .dm-mermaid-swatch-1 { background: var(--dm-mermaid-slice-1); }
+.markdown-body .dm-mermaid-swatch-2 { background: var(--dm-mermaid-slice-2); }
+.markdown-body .dm-mermaid-swatch-3 { background: var(--dm-mermaid-slice-3); }
+.markdown-body .dm-mermaid-swatch-4 { background: var(--dm-mermaid-slice-4); }
+.markdown-body .dm-mermaid-swatch-5 { background: var(--dm-mermaid-slice-5); }
+.markdown-body .dm-mermaid-swatch-6 { background: var(--dm-mermaid-slice-6); }
+
+.markdown-body .dm-mermaid-gantt-list {
+    display: grid;
+    gap: 10px;
+    min-width: 520px;
+}
+
+.markdown-body .dm-mermaid-gantt-row {
+    display: grid;
+    grid-template-columns: minmax(140px, 0.28fr) minmax(260px, 1fr);
+    gap: 12px;
+    align-items: center;
+}
+
+.markdown-body .dm-mermaid-gantt-row span {
+    overflow: hidden;
+    color: var(--component-on-container, var(--dm-paper));
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.markdown-body .dm-mermaid-gantt-row i {
+    display: block;
+    min-height: 18px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--dm-mermaid-accent), color-mix(in oklch, var(--dm-mermaid-accent) 56%, transparent));
+}
+
+.markdown-body .dm-timeline-axis,
+.markdown-body .dm-timeline-stem,
+.markdown-body .dm-xy-axis,
+.markdown-body .dm-xy-grid {
+    fill: none;
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 50%, transparent);
+    stroke-width: 1.2;
+}
+
+.markdown-body .dm-timeline-stem,
+.markdown-body .dm-xy-grid {
+    stroke-dasharray: 4 4;
+}
+
+.markdown-body .dm-timeline-point {
+    fill: var(--color-surface);
+    stroke: var(--dm-mermaid-accent);
+    stroke-width: 3;
+}
+
+.markdown-body .dm-timeline-event {
+    fill: color-mix(in oklch, var(--color-surface) 88%, black);
+    stroke: color-mix(in oklch, var(--dm-mermaid-accent) 44%, var(--dm-line));
+    stroke-width: 1.2;
+}
+
+.markdown-body .dm-timeline-title,
+.markdown-body .dm-timeline-period,
+.markdown-body .dm-timeline-event-text,
+.markdown-body .dm-zenuml-participant text,
+.markdown-body .dm-zenuml-message-label,
+.markdown-body .dm-sankey-node text,
+.markdown-body .dm-xy-title,
+.markdown-body .dm-xy-tick,
+.markdown-body .dm-xy-label,
+.markdown-body .dm-xy-value {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+}
+
+.markdown-body .dm-timeline-title,
+.markdown-body .dm-xy-title {
+    font-size: 0.92rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-timeline-period,
+.markdown-body .dm-zenuml-participant text,
+.markdown-body .dm-sankey-node text {
+    font-size: 0.74rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-timeline-event-text,
+.markdown-body .dm-zenuml-message-label,
+.markdown-body .dm-xy-label,
+.markdown-body .dm-xy-value {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 82%, transparent);
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-zenuml-participant rect,
+.markdown-body .dm-sankey-node rect {
+    fill: color-mix(in oklch, var(--color-surface) 88%, black);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 56%, transparent);
+    stroke-width: 1.2;
+}
+
+.markdown-body .dm-zenuml-participant line {
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 38%, transparent);
+    stroke-dasharray: 5 5;
+}
+
+.markdown-body .dm-zenuml-message {
+    stroke: var(--dm-mermaid-accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.markdown-body .dm-sankey-link {
+    fill: none;
+    stroke-linecap: round;
+    opacity: 0.72;
+}
+
+.markdown-body .dm-sankey-link-1 { stroke: var(--dm-mermaid-slice-1); }
+.markdown-body .dm-sankey-link-2 { stroke: var(--dm-mermaid-slice-2); }
+.markdown-body .dm-sankey-link-3 { stroke: var(--dm-mermaid-slice-3); }
+.markdown-body .dm-sankey-link-4 { stroke: var(--dm-mermaid-slice-4); }
+.markdown-body .dm-sankey-link-5 { stroke: var(--dm-mermaid-slice-5); }
+.markdown-body .dm-sankey-link-6 { stroke: var(--dm-mermaid-slice-6); }
+
+.markdown-body .dm-xy-bar {
+    fill: color-mix(in oklch, var(--dm-mermaid-accent) 72%, white);
+    stroke: color-mix(in oklch, var(--dm-mermaid-accent) 72%, black);
+    stroke-width: 1;
+}
+
+.markdown-body .dm-xy-bar-2 { fill: var(--dm-mermaid-slice-2); }
+.markdown-body .dm-xy-bar-3 { fill: var(--dm-mermaid-slice-3); }
+.markdown-body .dm-xy-bar-4 { fill: var(--dm-mermaid-slice-4); }
+.markdown-body .dm-xy-bar-5 { fill: var(--dm-mermaid-slice-5); }
+.markdown-body .dm-xy-bar-6 { fill: var(--dm-mermaid-slice-6); }
+
+.markdown-body .dm-requirement-relation,
+.markdown-body .dm-git-branch-edge,
+.markdown-body .dm-c4-relation,
+.markdown-body .dm-mindmap-edge {
+    fill: none;
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 64%, transparent);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+}
+
+.markdown-body .dm-requirement-node rect,
+.markdown-body .dm-c4-node rect,
+.markdown-body .dm-mindmap-node rect {
+    fill: color-mix(in oklch, var(--color-surface) 88%, black);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 62%, transparent);
+    stroke-width: 1.3;
+}
+
+.markdown-body .dm-requirement-node line {
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 38%, transparent);
+    stroke-width: 1.1;
+}
+
+.markdown-body .dm-requirement-kind,
+.markdown-body .dm-requirement-name,
+.markdown-body .dm-requirement-field,
+.markdown-body .dm-requirement-relation-label,
+.markdown-body .dm-git-branch-label,
+.markdown-body .dm-git-commit text,
+.markdown-body .dm-c4-title,
+.markdown-body .dm-c4-label,
+.markdown-body .dm-c4-kind,
+.markdown-body .dm-c4-description,
+.markdown-body .dm-c4-relation-label,
+.markdown-body .dm-mindmap-node text {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+}
+
+.markdown-body .dm-requirement-kind,
+.markdown-body .dm-c4-kind,
+.markdown-body .dm-requirement-relation-label,
+.markdown-body .dm-c4-relation-label {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 74%, transparent);
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-requirement-name,
+.markdown-body .dm-c4-label,
+.markdown-body .dm-mindmap-node text {
+    font-size: 0.84rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-requirement-field,
+.markdown-body .dm-c4-description {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 82%, transparent);
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.markdown-body .dm-requirement-field-key {
+    font-weight: 900;
+}
+
+.markdown-body .dm-git-lane {
+    fill: none;
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 52%, transparent);
+    stroke-width: 2.1;
+}
+
+.markdown-body .dm-git-lane-1,
+.markdown-body .dm-git-commit-normal circle {
+    stroke: var(--dm-mermaid-accent);
+}
+
+.markdown-body .dm-git-branch-label {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 82%, transparent);
+    font-size: 0.76rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-git-commit circle {
+    fill: var(--color-surface);
+    stroke: var(--component-on-container, var(--dm-paper));
+    stroke-width: 3;
+}
+
+.markdown-body .dm-git-commit-highlight circle {
+    fill: var(--dm-mermaid-accent);
+}
+
+.markdown-body .dm-git-commit-reverse circle {
+    fill: color-mix(in oklch, var(--color-error) 58%, transparent);
+}
+
+.markdown-body .dm-git-commit text {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 84%, transparent);
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-c4-node-person rect,
+.markdown-body .dm-c4-node-person_ext rect {
+    fill: color-mix(in oklch, var(--component-color, var(--dm-copper)) 28%, var(--color-surface));
+}
+
+.markdown-body .dm-c4-node-system rect,
+.markdown-body .dm-c4-node-system_ext rect {
+    fill: color-mix(in oklch, var(--color-info) 26%, var(--color-surface));
+}
+
+.markdown-body .dm-c4-title {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 84%, transparent);
+    font-size: 0.92rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-mindmap-edge {
+    stroke: color-mix(in oklch, var(--dm-mermaid-accent) 58%, var(--dm-line));
+}
+
+.markdown-body .dm-mindmap-root rect {
+    fill: var(--dm-mermaid-panel);
+    stroke: color-mix(in oklch, var(--component-color, var(--dm-copper)) 54%, var(--dm-line));
+    stroke-width: 1.6;
+}
+
+.markdown-body .dm-block-edge,
+.markdown-body .dm-architecture-edge {
+    stroke: var(--dm-mermaid-accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.markdown-body .dm-block-node rect,
+.markdown-body .dm-packet-field rect,
+.markdown-body .dm-kanban-column > rect,
+.markdown-body .dm-architecture-service rect {
+    fill: color-mix(in oklch, var(--color-surface) 88%, black);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 58%, transparent);
+    stroke-width: 1.2;
+}
+
+.markdown-body .dm-block-node text,
+.markdown-body .dm-packet-title,
+.markdown-body .dm-packet-range,
+.markdown-body .dm-packet-label,
+.markdown-body .dm-kanban-title,
+.markdown-body .dm-kanban-card-text,
+.markdown-body .dm-architecture-group text,
+.markdown-body .dm-architecture-label,
+.markdown-body .dm-architecture-icon,
+.markdown-body .dm-architecture-service-kind,
+.markdown-body .dm-architecture-edge-label,
+.markdown-body .dm-radar-title,
+.markdown-body .dm-radar-axis-label,
+.markdown-body .dm-radar-legend {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+}
+
+.markdown-body .dm-block-node text,
+.markdown-body .dm-packet-label,
+.markdown-body .dm-kanban-title,
+.markdown-body .dm-architecture-label {
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-packet-title,
+.markdown-body .dm-radar-title {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 84%, transparent);
+    font-size: 0.92rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-packet-range,
+.markdown-body .dm-architecture-service-kind,
+.markdown-body .dm-architecture-edge-label,
+.markdown-body .dm-radar-axis-label,
+.markdown-body .dm-radar-legend {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 74%, transparent);
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-packet-field rect {
+    fill: color-mix(in oklch, var(--dm-mermaid-accent) 20%, var(--color-surface));
+}
+
+.markdown-body .dm-kanban-column > rect {
+    fill: color-mix(in oklch, var(--color-surface-container-high) 56%, transparent);
+}
+
+.markdown-body .dm-kanban-card {
+    fill: color-mix(in oklch, var(--color-surface) 94%, white);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 28%, transparent);
+    stroke-width: 1;
+}
+
+.markdown-body .dm-kanban-card-text {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-size: 0.7rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-architecture-group rect {
+    fill: color-mix(in oklch, var(--color-surface-container-high) 42%, transparent);
+    stroke: color-mix(in oklch, var(--component-color, var(--dm-copper)) 42%, var(--dm-line));
+    stroke-width: 1.4;
+}
+
+.markdown-body .dm-architecture-group text,
+.markdown-body .dm-architecture-icon {
+    fill: color-mix(in oklch, var(--dm-mermaid-accent) 80%, var(--component-on-container, var(--dm-paper)));
+    font-size: 0.72rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-radar-grid {
+    fill: color-mix(in oklch, var(--color-surface-container-high) 18%, transparent);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 34%, transparent);
+    stroke-width: 1;
+}
+
+.markdown-body .dm-radar-axis {
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 42%, transparent);
+    stroke-width: 1;
+}
+
+.markdown-body .dm-radar-area {
+    fill: color-mix(in oklch, var(--dm-mermaid-accent) 28%, transparent);
+    stroke: none;
+}
+
+.markdown-body .dm-radar-line {
+    fill: none;
+    stroke: var(--dm-mermaid-accent);
+    stroke-width: 2.2;
+}
+
+.markdown-body .dm-radar-area-2 {
+    fill: color-mix(in oklch, var(--dm-mermaid-slice-2) 28%, transparent);
+}
+
+.markdown-body .dm-radar-line-2 {
+    stroke: var(--dm-mermaid-slice-2);
+}
+
+.markdown-body .dm-event-modeling-edge,
+.markdown-body .dm-ishikawa-spine,
+.markdown-body .dm-ishikawa-bone,
+.markdown-body .dm-wardley-edge,
+.markdown-body .dm-treeview-connector {
+    fill: none;
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 62%, transparent);
+    stroke-linecap: round;
+    stroke-width: 2;
+}
+
+.markdown-body .dm-event-modeling-node rect,
+.markdown-body .dm-cynefin-domain rect {
+    fill: color-mix(in oklch, var(--color-surface) 88%, black);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 56%, transparent);
+    stroke-width: 1.2;
+}
+
+.markdown-body .dm-event-modeling-event rect {
+    fill: color-mix(in oklch, var(--color-success) 22%, var(--color-surface));
+}
+
+.markdown-body .dm-event-modeling-command rect {
+    fill: color-mix(in oklch, var(--color-warning) 20%, var(--color-surface));
+}
+
+.markdown-body .dm-event-modeling-view rect {
+    fill: color-mix(in oklch, var(--color-info) 20%, var(--color-surface));
+}
+
+.markdown-body .dm-event-modeling-kind,
+.markdown-body .dm-event-modeling-label,
+.markdown-body .dm-treemap-title,
+.markdown-body .dm-treemap-leaf text,
+.markdown-body .dm-venn-label,
+.markdown-body .dm-venn-value,
+.markdown-body .dm-ishikawa-root,
+.markdown-body .dm-ishikawa-branch,
+.markdown-body .dm-ishikawa-cause,
+.markdown-body .dm-wardley-title,
+.markdown-body .dm-wardley-axis,
+.markdown-body .dm-wardley-point text,
+.markdown-body .dm-cynefin-title,
+.markdown-body .dm-cynefin-domain-name,
+.markdown-body .dm-cynefin-item,
+.markdown-body .dm-cynefin-center-label,
+.markdown-body .dm-treeview-label {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+}
+
+.markdown-body .dm-event-modeling-kind,
+.markdown-body .dm-wardley-axis,
+.markdown-body .dm-cynefin-domain-name {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 74%, transparent);
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.markdown-body .dm-event-modeling-label,
+.markdown-body .dm-treemap-title,
+.markdown-body .dm-venn-label,
+.markdown-body .dm-ishikawa-root,
+.markdown-body .dm-ishikawa-branch,
+.markdown-body .dm-wardley-title,
+.markdown-body .dm-cynefin-title,
+.markdown-body .dm-cynefin-center-label,
+.markdown-body .dm-treeview-label {
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+.markdown-body .dm-treemap-root,
+.markdown-body .dm-wardley-plane {
+    fill: color-mix(in oklch, var(--color-surface-container-high) 36%, transparent);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 36%, transparent);
+    stroke-width: 1.2;
+}
+
+.markdown-body .dm-treemap-leaf rect {
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 72%, transparent);
+    stroke-width: 1;
+}
+
+.markdown-body .dm-treemap-leaf-1 rect { fill: color-mix(in oklch, var(--dm-mermaid-slice-1) 58%, var(--color-surface)); }
+.markdown-body .dm-treemap-leaf-2 rect { fill: color-mix(in oklch, var(--dm-mermaid-slice-2) 58%, var(--color-surface)); }
+.markdown-body .dm-treemap-leaf-3 rect { fill: color-mix(in oklch, var(--dm-mermaid-slice-3) 58%, var(--color-surface)); }
+.markdown-body .dm-treemap-leaf-4 rect { fill: color-mix(in oklch, var(--dm-mermaid-slice-4) 58%, var(--color-surface)); }
+.markdown-body .dm-treemap-leaf-5 rect { fill: color-mix(in oklch, var(--dm-mermaid-slice-5) 58%, var(--color-surface)); }
+.markdown-body .dm-treemap-leaf-6 rect { fill: color-mix(in oklch, var(--dm-mermaid-slice-6) 58%, var(--color-surface)); }
+
+.markdown-body .dm-treemap-leaf text,
+.markdown-body .dm-venn-value,
+.markdown-body .dm-ishikawa-cause,
+.markdown-body .dm-cynefin-item {
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-venn-circle {
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 72%, transparent);
+    stroke-width: 1.6;
+}
+
+.markdown-body .dm-venn-left {
+    fill: color-mix(in oklch, var(--dm-mermaid-slice-2) 46%, transparent);
+}
+
+.markdown-body .dm-venn-right {
+    fill: color-mix(in oklch, var(--dm-mermaid-slice-4) 46%, transparent);
+}
+
+.markdown-body .dm-ishikawa-spine {
+    stroke-width: 2.4;
+}
+
+.markdown-body .dm-ishikawa-head {
+    fill: color-mix(in oklch, var(--dm-mermaid-accent) 18%, var(--color-surface));
+    stroke: color-mix(in oklch, var(--dm-mermaid-accent) 72%, var(--dm-line));
+    stroke-width: 1.5;
+}
+
+.markdown-body .dm-ishikawa-branch {
+    fill: color-mix(in oklch, var(--dm-mermaid-accent) 82%, var(--component-on-container, var(--dm-paper)));
+}
+
+.markdown-body .dm-wardley-plane {
+    fill: color-mix(in oklch, var(--color-surface-container-high) 24%, transparent);
+}
+
+.markdown-body .dm-wardley-point circle {
+    fill: var(--color-surface);
+    stroke: var(--component-on-container, var(--dm-paper));
+    stroke-width: 2.2;
+}
+
+.markdown-body .dm-wardley-anchor circle {
+    fill: var(--dm-mermaid-accent);
+}
+
+.markdown-body .dm-wardley-component circle {
+    fill: var(--dm-mermaid-slice-3);
+}
+
+.markdown-body .dm-cynefin-domain rect {
+    fill: color-mix(in oklch, var(--color-surface-container-high) 42%, transparent);
+}
+
+.markdown-body .dm-cynefin-center {
+    fill: color-mix(in oklch, var(--dm-mermaid-accent) 24%, var(--color-surface));
+    stroke: color-mix(in oklch, var(--dm-mermaid-accent) 72%, var(--dm-line));
+    stroke-width: 1.4;
+}
+
+.markdown-body .dm-treeview-connector {
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 38%, transparent);
+    stroke-width: 1.4;
+}
+
+.markdown-body .dm-treeview-glyph {
+    fill: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 22%, transparent);
+    stroke: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 58%, transparent);
+    stroke-width: 1.2;
+}
+
+.markdown-body .dm-treeview-glyph-dir {
+    fill: color-mix(in oklch, var(--dm-mermaid-accent) 36%, var(--color-surface));
+    stroke: color-mix(in oklch, var(--dm-mermaid-accent) 74%, var(--dm-line));
+}
+
+.markdown-body .dm-treeview-dir {
+    fill: color-mix(in oklch, var(--dm-mermaid-accent) 84%, var(--component-on-container, var(--dm-paper)));
+}
+
+.markdown-body .dm-mermaid-summary-grid span {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    min-height: 36px;
+    padding: 8px 10px;
+    border: 1px solid var(--dm-line);
+    border-radius: 8px;
+    color: var(--component-on-container, var(--dm-paper));
+    background: color-mix(in oklch, var(--color-surface-container-high) 64%, transparent);
+    font-weight: 800;
+}
+
+.markdown-body .dm-mermaid-quadrant-plane {
+    position: relative;
+    min-width: 560px;
+    height: 300px;
+    overflow: hidden;
+    border: 1px solid var(--dm-line);
+    border-radius: 8px;
+    background:
+        linear-gradient(90deg, transparent calc(50% - 1px), var(--dm-line) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(0deg, transparent calc(50% - 1px), var(--dm-line) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+        color-mix(in oklch, var(--color-surface-container-high) 64%, transparent);
+}
+
+.markdown-body .dm-mermaid-quadrant-plane > span {
+    position: absolute;
+    z-index: 1;
+    color: color-mix(in oklch, var(--component-on-container, var(--dm-paper)) 72%, transparent);
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.markdown-body .dm-mermaid-quadrant-plane > span:first-child {
+    top: 10px;
+    left: 12px;
+}
+
+.markdown-body .dm-mermaid-quadrant-plane > span:nth-child(2) {
+    right: 12px;
+    bottom: 10px;
+}
+
+.markdown-body .dm-mermaid-quadrant-plane b {
+    position: absolute;
+    z-index: 2;
+    max-width: 128px;
+    padding: 5px 8px;
+    border: 1px solid color-mix(in oklch, var(--dm-mermaid-accent) 60%, var(--dm-line));
+    border-radius: 999px;
+    color: var(--color-surface);
+    background: var(--dm-mermaid-accent);
+    font-size: 0.72rem;
+    line-height: 1;
+    text-align: center;
+    transform: translate(-50%, 50%);
+    white-space: nowrap;
+}
+
+.markdown-body .dm-mermaid-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    min-width: 520px;
+}
+
 .component-detail-page .app-main {
     padding-top: 26px;
 }

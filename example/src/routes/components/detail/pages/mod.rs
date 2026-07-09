@@ -25,6 +25,7 @@ pub fn component_page(slug: &str) -> Option<ComponentPage> {
         "datepicker" => datepicker::page(spec),
         "dialog" => dialog::page(spec),
         "divider" => divider::page(spec),
+        "dm-markdown" => dm_markdown::page(spec),
         "drawer" => drawer::page(spec),
         "file-upload" => file_upload::page(spec),
         "form" => form::page(spec),
@@ -85,6 +86,7 @@ mod collapse;
 mod datepicker;
 mod dialog;
 mod divider;
+mod dm_markdown;
 mod drawer;
 mod file_upload;
 mod form;

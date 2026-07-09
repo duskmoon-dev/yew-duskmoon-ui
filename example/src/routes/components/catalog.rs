@@ -175,6 +175,16 @@ pub const COMPONENTS: &[ComponentSpec] = &[
         api_kind: ApiKind::Standard,
     },
     ComponentSpec {
+        slug: "dm-markdown",
+        name: "Dm Markdown",
+        category: "Data Display",
+        description: "Markdown renderer with Duskmoon typography.",
+        docs: "Use Dm Markdown to render markdown source into the same readable style as Markdown Body.",
+        component_name: "DmMarkdown",
+        class_name: "markdown-body",
+        api_kind: ApiKind::Standard,
+    },
+    ComponentSpec {
         slug: "table",
         name: "Table",
         category: "Data Display",
