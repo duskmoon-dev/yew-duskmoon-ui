@@ -51,6 +51,8 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
     let document = TextDocument::new(source.clone());
     let line_count = document.line_count();
     let cursor_status = use_state(CursorStatus::default);
+    let scroll_position = use_state(|| (0, 0));
+    let is_focused = use_state(|| false);
     let highlight_ref = use_node_ref();
     let gutter_ref = use_node_ref();
 
@@ -74,11 +76,13 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
     let onscroll = {
         let highlight_ref = highlight_ref.clone();
         let gutter_ref = gutter_ref.clone();
+        let scroll_position = scroll_position.clone();
 
         Callback::from(move |event: Event| {
             let textarea: HtmlTextAreaElement = event.target_unchecked_into();
             let scroll_top = textarea.scroll_top();
             let scroll_left = textarea.scroll_left();
+            scroll_position.set((scroll_top, scroll_left));
 
             if let Some(highlight) = highlight_ref.cast::<HtmlElement>() {
                 highlight.set_scroll_top(scroll_top);
@@ -114,9 +118,17 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
     };
     let onfocus = {
         let cursor_status = cursor_status.clone();
+        let is_focused = is_focused.clone();
         Callback::from(move |event: FocusEvent| {
             let textarea: HtmlTextAreaElement = event.target_unchecked_into();
+            is_focused.set(true);
             cursor_status.set(CursorStatus::from_textarea(&textarea));
+        })
+    };
+    let onblur = {
+        let is_focused = is_focused.clone();
+        Callback::from(move |_event: FocusEvent| {
+            is_focused.set(false);
         })
     };
 
@@ -131,6 +143,7 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
     if props.syntax_highlight {
         classes.push("is-highlighted");
     }
+    classes.push("has-block-cursor");
     classes.push(props.class.clone());
 
     let body_classes = classes!(
@@ -145,9 +158,9 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
     let row_count = props.rows.max(1);
     let highlight_enabled = props.syntax_highlight && !source.is_empty();
     let input_style = if highlight_enabled {
-        "position: relative; z-index: 1; display: block; width: 100%; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); box-sizing: border-box; padding: 16px; border: 0; outline: 0; resize: vertical; overflow: auto; color: transparent; -webkit-text-fill-color: transparent; caret-color: var(--code-editor-caret, #111827); background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre;"
+        "position: relative; z-index: 1; display: block; width: 100%; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); box-sizing: border-box; padding: 16px; border: 0; outline: 0; resize: vertical; overflow: auto; color: transparent; -webkit-text-fill-color: transparent; caret-color: transparent; background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre;"
     } else {
-        "position: relative; z-index: 1; display: block; width: 100%; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); box-sizing: border-box; padding: 16px; border: 0; outline: 0; resize: vertical; overflow: auto; color: var(--code-token-plain, #1f2937); background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre;"
+        "position: relative; z-index: 1; display: block; width: 100%; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); box-sizing: border-box; padding: 16px; border: 0; outline: 0; resize: vertical; overflow: auto; color: var(--code-token-plain, #1f2937); caret-color: transparent; background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre;"
     };
     let highlight_tokens = highlight_tokens(props.language, &source);
     let selected_units = cursor_status.selected_units;
@@ -156,6 +169,14 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
     } else {
         format!(" · {selected_units} selected")
     };
+    let (scroll_top, scroll_left) = *scroll_position;
+    let cursor_left = cursor_status.visual_column.saturating_sub(1);
+    let cursor_top = cursor_status.position.line.saturating_sub(1) as f32 * 1.55;
+    let cursor_opacity = if *is_focused { "0.88" } else { "0.58" };
+    let cursor_visible = !props.readonly && selected_units == 0;
+    let cursor_style = format!(
+        "position: absolute; z-index: 2; left: calc(16px + {cursor_left}ch - {scroll_left}px); top: calc(16px + {cursor_top:.3}em - {scroll_top}px); width: 1ch; height: 1.55em; box-sizing: border-box; border: 1px solid color-mix(in oklch, var(--code-editor-caret, #111827) 82%, transparent); border-radius: 2px; opacity: {cursor_opacity}; background: color-mix(in oklch, var(--code-editor-caret, #111827) 70%, transparent); pointer-events: none; mix-blend-mode: multiply;"
+    );
 
     html! {
         <div
@@ -189,7 +210,7 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
                 }
                 <div
                     class="code-engine-editor"
-                    style="position: relative; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px);"
+                    style="position: relative; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); overflow: hidden;"
                 >
                     if highlight_enabled {
                         <pre
@@ -222,7 +243,15 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
                         onkeyup={onkeyup}
                         onclick={onclick}
                         onfocus={onfocus}
+                        onblur={onblur}
                     />
+                    if cursor_visible {
+                        <span
+                            class="code-engine-cursor code-engine-cursor-block"
+                            aria-hidden="true"
+                            style={cursor_style}
+                        />
+                    }
                 </div>
             </div>
             if props.show_status_bar {

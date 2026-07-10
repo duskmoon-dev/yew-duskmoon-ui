@@ -14,7 +14,7 @@ impl CursorPosition {
     pub fn from_utf16_offset(text: &str, offset: usize) -> Self {
         let mut remaining = offset;
         let mut line = 1;
-        let mut column = 1;
+        let mut column: usize = 1;
 
         for ch in text.chars() {
             if remaining == 0 {
@@ -37,6 +37,35 @@ impl CursorPosition {
 
         Self { line, column }
     }
+
+    pub fn visual_column_from_utf16_offset(text: &str, offset: usize, tab_size: usize) -> usize {
+        let tab_size = tab_size.max(1);
+        let mut remaining = offset;
+        let mut column: usize = 1;
+
+        for ch in text.chars() {
+            if remaining == 0 {
+                break;
+            }
+
+            let width = ch.len_utf16();
+            if width > remaining {
+                break;
+            }
+
+            remaining -= width;
+            if ch == '\n' {
+                column = 1;
+            } else if ch == '\t' {
+                let zero_based = column.saturating_sub(1);
+                column = ((zero_based / tab_size) + 1) * tab_size + 1;
+            } else {
+                column += 1;
+            }
+        }
+
+        column
+    }
 }
 
 impl Default for CursorPosition {
@@ -45,10 +74,21 @@ impl Default for CursorPosition {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct CursorStatus {
     pub position: CursorPosition,
+    pub visual_column: usize,
     pub selected_units: usize,
+}
+
+impl Default for CursorStatus {
+    fn default() -> Self {
+        Self {
+            position: CursorPosition::default(),
+            visual_column: 1,
+            selected_units: 0,
+        }
+    }
 }
 
 impl CursorStatus {
@@ -63,6 +103,7 @@ impl CursorStatus {
 
         Self {
             position: CursorPosition::from_utf16_offset(&value, start),
+            visual_column: CursorPosition::visual_column_from_utf16_offset(&value, start, 4),
             selected_units: start.abs_diff(end),
         }
     }
@@ -93,6 +134,18 @@ mod tests {
         assert_eq!(
             CursorPosition::from_utf16_offset("a😀b", 3),
             CursorPosition::new(1, 3)
+        );
+    }
+
+    #[test]
+    fn expands_tabs_for_visual_columns() {
+        assert_eq!(
+            CursorPosition::visual_column_from_utf16_offset("\tlet", 1, 4),
+            5
+        );
+        assert_eq!(
+            CursorPosition::visual_column_from_utf16_offset("ab\tlet", 3, 4),
+            5
         );
     }
 }
