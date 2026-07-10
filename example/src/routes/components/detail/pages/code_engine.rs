@@ -48,6 +48,18 @@ const CODE_ENGINE_API: &[ApiRow] = &[
         docs: "Shows the line gutter beside the source field.",
     },
     ApiRow {
+        prop: "show_status_bar",
+        ty: "bool",
+        default: "true",
+        docs: "Shows cursor position, selection count, language, and line count below the editor.",
+    },
+    ApiRow {
+        prop: "syntax_highlight",
+        ty: "bool",
+        default: "true",
+        docs: "Renders a Rust-powered syntax highlight layer behind the editable textarea.",
+    },
+    ApiRow {
         prop: "language",
         ty: "CodeLanguage",
         default: "PlainText",

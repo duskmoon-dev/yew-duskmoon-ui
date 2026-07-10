@@ -1,13 +1,17 @@
+mod cursor;
 mod document;
 mod language;
+mod syntax;
 
-use web_sys::HtmlTextAreaElement;
+use web_sys::{Event, FocusEvent, HtmlElement, HtmlTextAreaElement, KeyboardEvent, MouseEvent};
 use yew::prelude::*;
 use yew::virtual_dom::AttrValue;
 use yew::TargetCast;
 
+pub use cursor::{CursorPosition, CursorStatus};
 pub use document::TextDocument;
 pub use language::CodeLanguage;
+pub use syntax::{highlight_tokens, SyntaxToken, SyntaxTokenKind};
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct CodeEditorProps {
@@ -25,6 +29,10 @@ pub struct CodeEditorProps {
     pub readonly: bool,
     #[prop_or(true)]
     pub show_line_numbers: bool,
+    #[prop_or(true)]
+    pub show_status_bar: bool,
+    #[prop_or(true)]
+    pub syntax_highlight: bool,
     #[prop_or(CodeLanguage::PlainText)]
     pub language: CodeLanguage,
     #[prop_or(12)]
@@ -39,21 +47,76 @@ pub struct CodeEditorProps {
 pub fn code_editor(props: &CodeEditorProps) -> Html {
     let draft = use_state(|| props.default_value.clone());
     let current_value = props.value.clone().unwrap_or_else(|| (*draft).clone());
-    let document = TextDocument::new(current_value.to_string());
+    let source = current_value.to_string();
+    let document = TextDocument::new(source.clone());
     let line_count = document.line_count();
+    let cursor_status = use_state(CursorStatus::default);
+    let highlight_ref = use_node_ref();
+    let gutter_ref = use_node_ref();
 
     let oninput = {
         let draft = draft.clone();
         let on_change = props.on_change.clone();
         let controlled = props.value.is_some();
+        let cursor_status = cursor_status.clone();
 
         Callback::from(move |event: InputEvent| {
             let textarea: HtmlTextAreaElement = event.target_unchecked_into();
             let next = AttrValue::from(textarea.value());
+            cursor_status.set(CursorStatus::from_textarea(&textarea));
             if !controlled {
                 draft.set(next.clone());
             }
             on_change.emit(next);
+        })
+    };
+
+    let onscroll = {
+        let highlight_ref = highlight_ref.clone();
+        let gutter_ref = gutter_ref.clone();
+
+        Callback::from(move |event: Event| {
+            let textarea: HtmlTextAreaElement = event.target_unchecked_into();
+            let scroll_top = textarea.scroll_top();
+            let scroll_left = textarea.scroll_left();
+
+            if let Some(highlight) = highlight_ref.cast::<HtmlElement>() {
+                highlight.set_scroll_top(scroll_top);
+                highlight.set_scroll_left(scroll_left);
+            }
+
+            if let Some(gutter) = gutter_ref.cast::<HtmlElement>() {
+                gutter.set_scroll_top(scroll_top);
+            }
+        })
+    };
+
+    let onselect = {
+        let cursor_status = cursor_status.clone();
+        Callback::from(move |event: Event| {
+            let textarea: HtmlTextAreaElement = event.target_unchecked_into();
+            cursor_status.set(CursorStatus::from_textarea(&textarea));
+        })
+    };
+    let onkeyup = {
+        let cursor_status = cursor_status.clone();
+        Callback::from(move |event: KeyboardEvent| {
+            let textarea: HtmlTextAreaElement = event.target_unchecked_into();
+            cursor_status.set(CursorStatus::from_textarea(&textarea));
+        })
+    };
+    let onclick = {
+        let cursor_status = cursor_status.clone();
+        Callback::from(move |event: MouseEvent| {
+            let textarea: HtmlTextAreaElement = event.target_unchecked_into();
+            cursor_status.set(CursorStatus::from_textarea(&textarea));
+        })
+    };
+    let onfocus = {
+        let cursor_status = cursor_status.clone();
+        Callback::from(move |event: FocusEvent| {
+            let textarea: HtmlTextAreaElement = event.target_unchecked_into();
+            cursor_status.set(CursorStatus::from_textarea(&textarea));
         })
     };
 
@@ -77,6 +140,19 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
         "display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0;"
     };
     let row_count = props.rows.max(1);
+    let highlight_enabled = props.syntax_highlight && !source.is_empty();
+    let input_style = if highlight_enabled {
+        "display: block; width: 100%; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); box-sizing: border-box; padding: 16px; border: 0; outline: 0; resize: vertical; overflow: auto; color: transparent; caret-color: var(--dm-paper, #f8fafc); background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre;"
+    } else {
+        "display: block; width: 100%; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); box-sizing: border-box; padding: 16px; border: 0; outline: 0; resize: vertical; overflow: auto; color: var(--dm-paper, #f8fafc); background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre;"
+    };
+    let highlight_tokens = highlight_tokens(props.language, &source);
+    let selected_units = cursor_status.selected_units;
+    let selected_label = if selected_units == 0 {
+        String::new()
+    } else {
+        format!(" · {selected_units} selected")
+    };
 
     html! {
         <div
@@ -93,9 +169,10 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
             <div class={body_classes} style={body_style}>
                 if props.show_line_numbers {
                     <div
+                        ref={gutter_ref}
                         class="code-engine-gutter"
                         aria-hidden="true"
-                        style="display: flex; min-width: 48px; flex-direction: column; align-items: flex-end; box-sizing: border-box;"
+                        style="display: flex; min-width: 48px; max-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); overflow: hidden; flex-direction: column; align-items: flex-end; box-sizing: border-box;"
                     >
                         { for (1..=line_count).map(|line| html! {
                             <span
@@ -107,19 +184,62 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
                         }) }
                     </div>
                 }
-                <textarea
-                    class="code-engine-input"
-                    value={current_value}
-                    placeholder={props.placeholder.clone()}
-                    readonly={props.readonly}
-                    spellcheck="false"
-                    rows={row_count.to_string()}
-                    wrap="off"
-                    aria-label={props.aria_label.clone()}
-                    style="display: block; width: 100%; min-width: 0; box-sizing: border-box; resize: vertical; white-space: pre;"
-                    oninput={oninput}
-                />
+                <div
+                    class="code-engine-editor"
+                    style="position: relative; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px);"
+                >
+                    if highlight_enabled {
+                        <pre
+                            ref={highlight_ref}
+                            class="code-engine-highlight"
+                            aria-hidden="true"
+                            style="position: absolute; inset: 0; z-index: 0; margin: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); padding: 16px; overflow: hidden; color: var(--dm-paper, #f8fafc); background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre; pointer-events: none;"
+                        >
+                            <code class="code-engine-highlight-code">
+                                { for highlight_tokens.iter().map(render_syntax_token) }
+                            </code>
+                        </pre>
+                    }
+                    <textarea
+                        class="code-engine-input"
+                        value={current_value}
+                        placeholder={props.placeholder.clone()}
+                        readonly={props.readonly}
+                        spellcheck="false"
+                        rows={row_count.to_string()}
+                        wrap="off"
+                        aria-label={props.aria_label.clone()}
+                        style={input_style}
+                        oninput={oninput}
+                        onscroll={onscroll}
+                        onselect={onselect}
+                        onkeyup={onkeyup}
+                        onclick={onclick}
+                        onfocus={onfocus}
+                    />
+                </div>
             </div>
+            if props.show_status_bar {
+                <div
+                    class="code-engine-statusbar"
+                    style="display: flex; min-height: 34px; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px; border-top: 1px solid var(--dm-line, rgba(148, 163, 184, 0.24)); color: var(--dm-paper-muted, #94a3b8); background: color-mix(in oklch, var(--color-surface-container-high, #0f172a) 72%, transparent); font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.78rem;"
+                >
+                    <span class="code-engine-status-position">
+                        { format!("Ln {}, Col {}{}", cursor_status.position.line, cursor_status.position.column, selected_label) }
+                    </span>
+                    <span class="code-engine-status-meta">
+                        { format!("{} · {} lines", props.language.label(), line_count) }
+                    </span>
+                </div>
+            }
         </div>
+    }
+}
+
+fn render_syntax_token(token: &SyntaxToken) -> Html {
+    html! {
+        <span class={token.kind.class_name()} style={token.kind.style()}>
+            { token.text.clone() }
+        </span>
     }
 }
