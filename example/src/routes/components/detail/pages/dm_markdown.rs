@@ -12,6 +12,18 @@ const DM_MARKDOWN_API: &[ApiRow] = &[
         docs: "Extra CSS classes appended to the markdown root.",
     },
     ApiRow {
+        prop: "allow_html",
+        ty: "bool",
+        default: "true",
+        docs: "Renders safe raw HTML while escaping style, script, and object tags.",
+    },
+    ApiRow {
+        prop: "custom_elements",
+        ty: "Vec<String>",
+        default: "empty",
+        docs: "Allowed custom element tag names. Empty disables custom elements.",
+    },
+    ApiRow {
         prop: "markdown",
         ty: "AttrValue",
         default: "empty",
@@ -28,6 +40,14 @@ const DM_MARKDOWN_API: &[ApiRow] = &[
 const SAMPLE_MARKDOWN: &str = r#"# DmMarkdown rendering
 
 Dm Markdown renders source text into the same typography scope as `MarkdownBody`, with highlighted fenced code and Mermaid diagrams.
+
+## Raw HTML
+
+<aside><strong>Safe HTML:</strong> raw tags render by default.</aside>
+
+<el-dm-note>Custom elements are escaped unless their tag name is allowed.</el-dm-note>
+
+<script>alert("blocked")</script>
 
 ## Mermaid diagrams
 

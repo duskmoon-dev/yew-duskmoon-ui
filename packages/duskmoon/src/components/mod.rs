@@ -60,7 +60,9 @@ pub mod drawer;
 pub use drawer::Drawer;
 
 pub mod dm_markdown;
-pub use dm_markdown::{render_markdown_to_html, DmMarkdown};
+pub use dm_markdown::{
+    render_markdown_to_html, render_markdown_to_html_with_options, DmMarkdown, DmMarkdownOptions,
+};
 
 pub mod file_upload;
 pub use file_upload::FileUpload;

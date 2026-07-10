@@ -6,10 +6,29 @@ use yew::virtual_dom::AttrValue;
 pub struct DmMarkdownProps {
     #[prop_or_default]
     pub class: Classes,
+    #[prop_or(true)]
+    pub allow_html: bool,
+    #[prop_or_default]
+    pub custom_elements: Vec<String>,
     #[prop_or_default]
     pub markdown: AttrValue,
     #[prop_or_default]
     pub variant: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DmMarkdownOptions {
+    pub allow_html: bool,
+    pub custom_elements: Vec<String>,
+}
+
+impl Default for DmMarkdownOptions {
+    fn default() -> Self {
+        Self {
+            allow_html: true,
+            custom_elements: Vec::new(),
+        }
+    }
 }
 
 #[function_component(DmMarkdown)]
@@ -20,7 +39,13 @@ pub fn dm_markdown(props: &DmMarkdownProps) -> Html {
     }
     classes.push(props.class.clone());
 
-    let rendered = render_markdown_to_html(&props.markdown);
+    let rendered = render_markdown_to_html_with_options(
+        &props.markdown,
+        DmMarkdownOptions {
+            allow_html: props.allow_html,
+            custom_elements: props.custom_elements.clone(),
+        },
+    );
 
     html! {
         <div class={classes}>
@@ -30,7 +55,12 @@ pub fn dm_markdown(props: &DmMarkdownProps) -> Html {
 }
 
 pub fn render_markdown_to_html(markdown: &str) -> String {
-    let parser = Parser::new_ext(markdown, markdown_options()).map(sanitize_event);
+    render_markdown_to_html_with_options(markdown, DmMarkdownOptions::default())
+}
+
+pub fn render_markdown_to_html_with_options(markdown: &str, options: DmMarkdownOptions) -> String {
+    let parser =
+        Parser::new_ext(markdown, markdown_options()).map(|event| sanitize_event(event, &options));
     let parser = render_special_blocks(parser);
     let mut output = String::new();
     html::push_html(&mut output, parser.into_iter());
@@ -44,9 +74,10 @@ fn markdown_options() -> Options {
         | Options::ENABLE_GFM
 }
 
-fn sanitize_event(event: Event<'_>) -> Event<'_> {
+fn sanitize_event<'a>(event: Event<'a>, options: &DmMarkdownOptions) -> Event<'a> {
     match event {
-        Event::Html(html) | Event::InlineHtml(html) => Event::Text(html),
+        Event::Html(html) => sanitize_html_event(html, false, options),
+        Event::InlineHtml(html) => sanitize_html_event(html, true, options),
         Event::Start(Tag::Link {
             link_type,
             dest_url,
@@ -71,6 +102,198 @@ fn sanitize_event(event: Event<'_>) -> Event<'_> {
         }),
         event => event,
     }
+}
+
+fn sanitize_html_event<'a>(
+    html: CowStr<'a>,
+    inline: bool,
+    options: &DmMarkdownOptions,
+) -> Event<'a> {
+    if !options.allow_html {
+        return Event::Text(html);
+    }
+
+    let html = escape_disabled_html_tags(&html, options)
+        .map(|sanitized| CowStr::Boxed(sanitized.into_boxed_str()))
+        .unwrap_or(html);
+
+    if inline {
+        Event::InlineHtml(html)
+    } else {
+        Event::Html(html)
+    }
+}
+
+struct RawHtmlTag<'a> {
+    name: Option<&'a str>,
+    end: usize,
+    closing: bool,
+    self_closing: bool,
+}
+
+fn escape_disabled_html_tags(html: &str, options: &DmMarkdownOptions) -> Option<String> {
+    let mut output = String::new();
+    let mut cursor = 0;
+    let mut search = 0;
+    let mut changed = false;
+
+    while let Some(relative_start) = html[search..].find('<') {
+        let start = search + relative_start;
+        let Some(tag) = parse_raw_html_tag(html, start) else {
+            search = start + 1;
+            continue;
+        };
+
+        let Some(name) = tag.name else {
+            search = tag.end;
+            continue;
+        };
+
+        if should_escape_html_tag(name, options) {
+            let escape_end = if tag.closing || tag.self_closing {
+                tag.end
+            } else {
+                find_closing_html_tag_end(html, name, tag.end).unwrap_or(tag.end)
+            };
+
+            output.push_str(&html[cursor..start]);
+            output.push_str(&escape_html(&html[start..escape_end]));
+            cursor = escape_end;
+            search = escape_end;
+            changed = true;
+        } else {
+            search = tag.end;
+        }
+    }
+
+    if changed {
+        output.push_str(&html[cursor..]);
+        Some(output)
+    } else {
+        None
+    }
+}
+
+fn parse_raw_html_tag(html: &str, start: usize) -> Option<RawHtmlTag<'_>> {
+    let rest = html.get(start + 1..)?;
+
+    if rest.starts_with("!--") {
+        let end = rest.find("-->").map(|index| start + 1 + index + 3)?;
+        return Some(RawHtmlTag {
+            name: None,
+            end,
+            closing: false,
+            self_closing: false,
+        });
+    }
+
+    let first = rest.chars().next()?;
+    if matches!(first, '!' | '?') {
+        let end = find_html_tag_end(html, start + 1)?;
+        return Some(RawHtmlTag {
+            name: None,
+            end,
+            closing: false,
+            self_closing: false,
+        });
+    }
+
+    let closing = rest.starts_with('/');
+    let mut name_start = start + 1 + usize::from(closing);
+
+    while let Some(ch) = html.get(name_start..)?.chars().next() {
+        if ch.is_ascii_whitespace() {
+            name_start += ch.len_utf8();
+        } else {
+            break;
+        }
+    }
+
+    let name_end = html[name_start..]
+        .char_indices()
+        .find_map(|(index, ch)| (!is_html_tag_name_char(ch)).then_some(name_start + index))
+        .unwrap_or(html.len());
+
+    if name_end == name_start {
+        return None;
+    }
+
+    let end = find_html_tag_end(html, name_end)?;
+    let self_closing = html[start..end].trim_end().ends_with("/>");
+
+    Some(RawHtmlTag {
+        name: Some(&html[name_start..name_end]),
+        end,
+        closing,
+        self_closing,
+    })
+}
+
+fn find_html_tag_end(html: &str, from: usize) -> Option<usize> {
+    let mut quote = None;
+
+    for (offset, ch) in html[from..].char_indices() {
+        match quote {
+            Some(quote_ch) if ch == quote_ch => quote = None,
+            Some(_) => {}
+            None if matches!(ch, '"' | '\'') => quote = Some(ch),
+            None if ch == '>' => return Some(from + offset + ch.len_utf8()),
+            None => {}
+        }
+    }
+
+    None
+}
+
+fn find_closing_html_tag_end(html: &str, tag_name: &str, from: usize) -> Option<usize> {
+    let mut search = from;
+
+    while let Some(relative_start) = html[search..].find('<') {
+        let start = search + relative_start;
+        let Some(tag) = parse_raw_html_tag(html, start) else {
+            search = start + 1;
+            continue;
+        };
+
+        if tag.closing
+            && tag
+                .name
+                .is_some_and(|name| name.eq_ignore_ascii_case(tag_name))
+        {
+            return Some(tag.end);
+        }
+
+        search = tag.end;
+    }
+
+    None
+}
+
+fn is_unsafe_html_tag(tag: &str) -> bool {
+    matches!(
+        tag.to_ascii_lowercase().as_str(),
+        "object" | "script" | "style"
+    )
+}
+
+fn should_escape_html_tag(tag: &str, options: &DmMarkdownOptions) -> bool {
+    is_unsafe_html_tag(tag)
+        || (is_custom_element_tag(tag) && !is_custom_element_enabled(tag, options))
+}
+
+fn is_custom_element_tag(tag: &str) -> bool {
+    tag.contains('-')
+}
+
+fn is_custom_element_enabled(tag: &str, options: &DmMarkdownOptions) -> bool {
+    options
+        .custom_elements
+        .iter()
+        .any(|enabled| enabled.eq_ignore_ascii_case(tag))
+}
+
+fn is_html_tag_name_char(ch: char) -> bool {
+    ch.is_ascii_alphanumeric() || matches!(ch, '-' | ':')
 }
 
 struct FencedBlock {
@@ -4601,7 +4824,7 @@ fn is_safe_url(url: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::render_markdown_to_html;
+    use super::{render_markdown_to_html, render_markdown_to_html_with_options, DmMarkdownOptions};
 
     #[test]
     fn renders_common_markdown() {
@@ -4615,13 +4838,59 @@ mod tests {
     }
 
     #[test]
-    fn escapes_raw_html() {
-        let html = render_markdown_to_html("<script>alert(1)</script>\n\nHello <span>world</span>");
+    fn renders_safe_raw_html_and_escapes_unsafe_tags() {
+        let html = render_markdown_to_html(
+            "<script>alert(1)</script>\n\nHello <span class=\"name\">world</span>\n\n<div><script>alert(2)</script><span>still safe</span></div>\n\n<style>body { color: red; }</style>\n\n<object data=\"demo.swf\"></object>",
+        );
 
         assert!(!html.contains("<script>"));
-        assert!(!html.contains("<span>world</span>"));
+        assert!(!html.contains("<style>"));
+        assert!(!html.contains("<object"));
         assert!(html.contains("&lt;script&gt;alert(1)&lt;/script&gt;"));
+        assert!(html.contains("&lt;style&gt;body { color: red; }&lt;/style&gt;"));
+        assert!(html.contains("&lt;object"));
+        assert!(html.contains("demo.swf"));
+        assert!(html.contains("&lt;/object&gt;"));
+        assert!(html.contains(r#"Hello <span class="name">world</span>"#));
+        assert!(html
+            .contains("<div>&lt;script&gt;alert(2)&lt;/script&gt;<span>still safe</span></div>"));
+    }
+
+    #[test]
+    fn can_escape_all_raw_html() {
+        let html = render_markdown_to_html_with_options(
+            "Hello <span>world</span>",
+            DmMarkdownOptions {
+                allow_html: false,
+                custom_elements: Vec::new(),
+            },
+        );
+
+        assert!(!html.contains("<span>world</span>"));
         assert!(html.contains("Hello &lt;span&gt;world&lt;/span&gt;"));
+    }
+
+    #[test]
+    fn escapes_custom_elements_unless_enabled() {
+        let html = render_markdown_to_html(
+            "<el-dm-alert><strong>safe</strong></el-dm-alert>\n\n<other-widget>blocked</other-widget>",
+        );
+
+        assert!(html.contains("&lt;el-dm-alert&gt;"));
+        assert!(html.contains("<strong>safe</strong>"));
+        assert!(html.contains("&lt;/el-dm-alert&gt;"));
+        assert!(html.contains("&lt;other-widget&gt;blocked&lt;/other-widget&gt;"));
+
+        let html = render_markdown_to_html_with_options(
+            "<el-dm-alert><strong>safe</strong></el-dm-alert>\n\n<other-widget>blocked</other-widget>",
+            DmMarkdownOptions {
+                allow_html: true,
+                custom_elements: vec!["el-dm-alert".to_owned()],
+            },
+        );
+
+        assert!(html.contains("<el-dm-alert><strong>safe</strong></el-dm-alert>"));
+        assert!(html.contains("&lt;other-widget&gt;blocked&lt;/other-widget&gt;"));
     }
 
     #[test]
