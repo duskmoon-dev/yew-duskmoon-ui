@@ -128,6 +128,9 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
     if let Some(variant) = &props.variant {
         classes.push(format!("code-engine-{}", variant));
     }
+    if props.syntax_highlight {
+        classes.push("is-highlighted");
+    }
     classes.push(props.class.clone());
 
     let body_classes = classes!(
@@ -142,9 +145,9 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
     let row_count = props.rows.max(1);
     let highlight_enabled = props.syntax_highlight && !source.is_empty();
     let input_style = if highlight_enabled {
-        "display: block; width: 100%; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); box-sizing: border-box; padding: 16px; border: 0; outline: 0; resize: vertical; overflow: auto; color: transparent; caret-color: var(--dm-paper, #f8fafc); background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre;"
+        "position: relative; z-index: 1; display: block; width: 100%; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); box-sizing: border-box; padding: 16px; border: 0; outline: 0; resize: vertical; overflow: auto; color: transparent; -webkit-text-fill-color: transparent; caret-color: var(--code-editor-caret, #111827); background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre;"
     } else {
-        "display: block; width: 100%; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); box-sizing: border-box; padding: 16px; border: 0; outline: 0; resize: vertical; overflow: auto; color: var(--dm-paper, #f8fafc); background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre;"
+        "position: relative; z-index: 1; display: block; width: 100%; min-width: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); box-sizing: border-box; padding: 16px; border: 0; outline: 0; resize: vertical; overflow: auto; color: var(--code-token-plain, #1f2937); background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre;"
     };
     let highlight_tokens = highlight_tokens(props.language, &source);
     let selected_units = cursor_status.selected_units;
@@ -158,7 +161,7 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
         <div
             class={classes}
             data-language={props.language.as_str()}
-            style={format!("--code-engine-rows: {row_count}; display: flex; width: min(100%, 860px); min-width: 0; flex-direction: column; overflow: hidden;")}
+            style={format!("--code-engine-rows: {row_count}; --code-editor-caret: #111827; --code-token-plain: #1f2937; --code-token-keyword: #d97706; --code-token-type: #7c3aed; --code-token-string: #047857; --code-token-number: #dc2626; --code-token-comment: #64748b; --code-token-function: #2563eb; --code-token-punctuation: #6b7280; display: flex; width: min(100%, 860px); min-width: 0; flex-direction: column; overflow: hidden;")}
         >
             <div
                 class="code-engine-header"
@@ -193,9 +196,12 @@ pub fn code_editor(props: &CodeEditorProps) -> Html {
                             ref={highlight_ref}
                             class="code-engine-highlight"
                             aria-hidden="true"
-                            style="position: absolute; inset: 0; z-index: 0; margin: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); padding: 16px; overflow: hidden; color: var(--dm-paper, #f8fafc); background: transparent; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre; pointer-events: none;"
+                            style="position: absolute; inset: 0; z-index: 0; box-sizing: border-box; margin: 0; min-height: calc((var(--code-engine-rows, 12) * 1.55em) + 32px); padding: 16px; overflow: hidden; border: 0; color: var(--code-token-plain, #1f2937); background: transparent; box-shadow: none; font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 0.95rem; line-height: 1.55; tab-size: 4; white-space: pre; pointer-events: none;"
                         >
-                            <code class="code-engine-highlight-code">
+                            <code
+                                class="code-engine-highlight-code"
+                                style="display: block; padding: 0; border: 0; color: inherit; background: transparent; box-shadow: none; font: inherit; white-space: pre;"
+                            >
                                 { for highlight_tokens.iter().map(render_syntax_token) }
                             </code>
                         </pre>

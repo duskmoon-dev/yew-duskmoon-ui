@@ -88,12 +88,18 @@ const CODE_ENGINE_API: &[ApiRow] = &[
 const SAMPLE_RUST: &str = r#"use yew::prelude::*;
 use code_engine::{CodeEditor, CodeLanguage};
 
+const MAX_LINES: usize = 240;
+
+// Clamp oversized buffers before rendering.
 #[function_component(App)]
 pub fn app() -> Html {
+    let title: String = "Editor ready".to_owned();
+    let limit = MAX_LINES.min(42);
+
     html! {
         <CodeEditor
             language={CodeLanguage::Rust}
-            default_value={"fn main() {}"}
+            default_value={format!("fn main() {{ println!(\"{title}: {limit}\"); }}")}
         />
     }
 }
