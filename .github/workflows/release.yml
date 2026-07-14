@@ -66,6 +66,12 @@ jobs:
       - name: Build code-engine package
         run: cargo package --package code-engine --allow-dirty
 
+      - name: Read code-engine version
+        id: code_engine
+        run: |
+          version="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "code-engine") | .version')"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
       - name: Verify crates.io token
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
@@ -78,9 +84,10 @@ jobs:
       - name: Publish code-engine dependency
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          CODE_ENGINE_VERSION: ${{ steps.code_engine.outputs.version }}
         run: |
-          if curl -fsS https://crates.io/api/v1/crates/code-engine/0.1.0 >/dev/null; then
-            echo "code-engine 0.1.0 already exists on crates.io"
+          if cargo info "code-engine@${CODE_ENGINE_VERSION}" --registry crates-io >/dev/null 2>&1; then
+            echo "code-engine ${CODE_ENGINE_VERSION} already exists on crates.io"
           else
             cargo publish --package code-engine --registry crates-io
           fi
