@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       git_ref:
-        description: "Git ref to release from"
+        description: "Git branch to release from and update"
         required: true
         default: "main"
         type: string
@@ -17,15 +17,15 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   release:
-    name: Release crate
+    name: Release workspace crates
     runs-on: ubuntu-latest
 
     steps:
@@ -51,26 +51,53 @@ jobs:
             ${{ runner.os }}-cargo-release-
             ${{ runner.os }}-cargo-
 
+      - name: Install cargo-edit
+        run: cargo install cargo-edit --version 0.13.10 --locked
+
       - name: Configure Git author
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Update crate version
+      - name: Update workspace versions
         env:
           VERSION: ${{ inputs.version }}
+          GIT_REF: ${{ inputs.git_ref }}
         run: |
-          perl -0pi -e "s/^version = \"[^\"]+\"/version = \"$VERSION\"/m" packages/duskmoon/Cargo.toml
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error title=Invalid release version::Use a version such as 0.9.0."
+            exit 1
+          fi
+
+          if ! git check-ref-format --branch "$GIT_REF" >/dev/null; then
+            echo "::error title=Invalid release branch::Use a branch name such as main."
+            exit 1
+          fi
+
+          cargo set-version --workspace "$VERSION"
+
+          metadata="$(cargo metadata --no-deps --format-version 1)"
+          jq -e --arg version "$VERSION" '
+            (.packages | length > 0)
+            and all(.packages[]; .version == $version)
+            and all(
+              .packages[].dependencies[] | select(.path != null);
+              .req == ("^" + $version)
+            )
+          ' <<<"$metadata"
+
+          if git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
+            if [ "$(git rev-list -n 1 "v${VERSION}")" != "$(git rev-parse HEAD)" ] ||
+              ! git diff --quiet -- \
+                packages/code-engine/Cargo.toml \
+                packages/duskmoon/Cargo.toml
+            then
+              echo "::error title=Conflicting release tag::v${VERSION} already belongs to another release state."
+              exit 1
+            fi
+          fi
+
           cargo check --workspace --all-features
-
-      - name: Build code-engine package
-        run: cargo package --package code-engine --allow-dirty
-
-      - name: Read code-engine version
-        id: code_engine
-        run: |
-          version="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "code-engine") | .version')"
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
 
       - name: Verify crates.io token
         env:
@@ -81,55 +108,93 @@ jobs:
             exit 1
           fi
 
-      - name: Publish code-engine dependency
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-          CODE_ENGINE_VERSION: ${{ steps.code_engine.outputs.version }}
-        run: |
-          if cargo info "code-engine@${CODE_ENGINE_VERSION}" --registry crates-io >/dev/null 2>&1; then
-            echo "code-engine ${CODE_ENGINE_VERSION} already exists on crates.io"
-          else
-            cargo publish --package code-engine --registry crates-io
-          fi
-
-      - name: Build release package
-        run: |
-          for attempt in 1 2 3 4 5; do
-            if cargo package --package yew-duskmoon --allow-dirty; then
-              exit 0
-            fi
-            echo "Waiting for crates.io index to include workspace dependencies (attempt ${attempt})"
-            sleep 15
-          done
-          cargo package --package yew-duskmoon --allow-dirty
-
-      - name: Publish crate
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: cargo publish --package yew-duskmoon --allow-dirty --registry crates-io
-
       - name: Commit version bump
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          git add packages/duskmoon/Cargo.toml
-          git commit -m "chore(release): v${VERSION}"
+          git add \
+            packages/code-engine/Cargo.toml \
+            packages/duskmoon/Cargo.toml
+
+          if git diff --cached --quiet; then
+            echo "Workspace versions are already committed"
+          else
+            git commit -m "chore(release): v${VERSION}"
+          fi
+
+      - name: Push release commit
+        env:
+          GIT_REF: ${{ inputs.git_ref }}
+        run: git push origin "HEAD:refs/heads/${GIT_REF}"
+
+      - name: Package code-engine
+        run: cargo package --package code-engine
+
+      - name: Publish code-engine dependency
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if cargo info "code-engine@${VERSION}" --registry crates-io >/dev/null 2>&1; then
+            echo "code-engine ${VERSION} already exists on crates.io"
+          else
+            cargo publish --package code-engine --registry crates-io
+          fi
+
+      - name: Package yew-duskmoon
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if cargo package --package yew-duskmoon; then
+              exit 0
+            fi
+            echo "Waiting for crates.io to index code-engine ${VERSION} (attempt ${attempt}/10)"
+            sleep 15
+          done
+          cargo package --package yew-duskmoon
+
+      - name: Publish yew-duskmoon
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if cargo info "yew-duskmoon@${VERSION}" --registry crates-io >/dev/null 2>&1; then
+            echo "yew-duskmoon ${VERSION} already exists on crates.io"
+          else
+            cargo publish --package yew-duskmoon --registry crates-io
+          fi
 
       - name: Create and push tag
         env:
           VERSION: ${{ inputs.version }}
-          GIT_REF: ${{ inputs.git_ref }}
         run: |
-          git tag "v${VERSION}"
-          git push origin "HEAD:${GIT_REF}"
+          if git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
+            if [ "$(git rev-list -n 1 "v${VERSION}")" != "$(git rev-parse HEAD)" ]; then
+              echo "::error title=Conflicting release tag::v${VERSION} points to another commit."
+              exit 1
+            fi
+          else
+            git tag "v${VERSION}"
+          fi
+
           git push origin "v${VERSION}"
 
-      - name: Create GitHub release
+      - name: Create or update GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version }}
         run: |
-          gh release create "v${VERSION}" \
-            "target/package/yew-duskmoon-${VERSION}.crate" \
-            --title "v${VERSION}" \
-            --generate-notes
+          artifacts=(
+            "target/package/code-engine-${VERSION}.crate"
+            "target/package/yew-duskmoon-${VERSION}.crate"
+          )
+
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            gh release upload "v${VERSION}" "${artifacts[@]}" --clobber
+          else
+            gh release create "v${VERSION}" "${artifacts[@]}" \
+              --verify-tag \
+              --title "v${VERSION}" \
+              --generate-notes
+          fi
