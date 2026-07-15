@@ -324,11 +324,29 @@ fn parse_css_number(value: &str) -> Option<f64> {
     value.parse::<f64>().ok().filter(|value| value.is_finite())
 }
 
+const COLOR_CODE_STYLE: &str =
+    "display:inline-flex;align-items:center;gap:0.35em;white-space:nowrap;vertical-align:middle;";
+const COLOR_CHIP_STYLE: &str = concat!(
+    "position:relative;",
+    "display:inline-block;",
+    "flex:0 0 auto;",
+    "width:1em;",
+    "height:1em;",
+    "overflow:hidden;",
+    "border:1px solid color-mix(in oklch, var(--color-base-content, #111827) 56%, var(--color-surface, #ffffff));",
+    "border-radius:3px;",
+    "background-color:var(--color-surface, #ffffff);",
+    "background-image:conic-gradient(color-mix(in oklch, var(--color-base-content, #111827) 22%, transparent) 25%, transparent 0 50%, color-mix(in oklch, var(--color-base-content, #111827) 22%, transparent) 0 75%, transparent 0);",
+    "background-size:6px 6px;",
+    "box-shadow:0 0 0 1px color-mix(in oklch, var(--color-surface, #ffffff) 68%, transparent);",
+);
+const COLOR_CHIP_SWATCH_STYLE: &str = "position:absolute;inset:0;";
+
 fn render_color_chip(value: &str) -> String {
     let text = escape_html(value);
     let attribute = escape_attribute(value);
     format!(
-        "<code class=\"dm-color-code\">{text}<span class=\"dm-color-chip\" role=\"img\" aria-label=\"Color {attribute}\"><span class=\"dm-color-chip-swatch\" style=\"background-color:{attribute}\" aria-hidden=\"true\"></span></span></code>"
+        "<code class=\"dm-color-code\" style=\"{COLOR_CODE_STYLE}\">{text}<span class=\"dm-color-chip\" role=\"img\" aria-label=\"Color {attribute}\" style=\"{COLOR_CHIP_STYLE}\"><span class=\"dm-color-chip-swatch\" style=\"{COLOR_CHIP_SWATCH_STYLE}background-color:{attribute};\" aria-hidden=\"true\"></span></span></code>"
     )
 }
 
@@ -5187,7 +5205,20 @@ mod tests {
         assert!(html.contains("#4C86FC"));
         assert!(html.contains("rgba(255, 0, 0, 0.5)"));
         assert!(html.contains(r#"class="dm-color-chip" role="img" aria-label="Color #4C86FC""#));
-        assert!(html.contains(r#"style="background-color:#4C86FC""#));
+        assert!(html.contains("background-color:#4C86FC;"));
+    }
+
+    #[test]
+    fn embeds_color_chip_layout_styles() {
+        let html = render_markdown_to_html("`#0065FF`");
+
+        assert!(html.contains(
+            r#"style="display:inline-flex;align-items:center;gap:0.35em;white-space:nowrap;vertical-align:middle;""#
+        ));
+        assert!(html.contains(
+            r#"style="position:relative;display:inline-block;flex:0 0 auto;width:1em;height:1em;overflow:hidden;"#
+        ));
+        assert!(html.contains(r#"style="position:absolute;inset:0;background-color:#0065FF;""#));
     }
 
     #[test]
