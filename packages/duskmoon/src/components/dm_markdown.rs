@@ -1,4 +1,4 @@
-use pulldown_cmark::{html, CodeBlockKind, CowStr, Event, Options, Parser, Tag, TagEnd};
+use pulldown_cmark::{html, CodeBlockKind, CowStr, Event, LinkType, Options, Parser, Tag, TagEnd};
 use yew::prelude::*;
 use yew::virtual_dom::AttrValue;
 
@@ -22,6 +22,9 @@ pub struct DmMarkdownProps {
     /// Whether safe raw HTML is passed through to the rendered output.
     #[prop_or(true)]
     pub allow_html: bool,
+    /// Optional directory URL used to resolve relative link and image destinations.
+    #[prop_or_default]
+    pub base_url: Option<String>,
     /// Custom element tag names that may be rendered instead of entity-escaped.
     #[prop_or_default]
     pub custom_elements: Vec<String>,
@@ -44,6 +47,8 @@ pub struct DmMarkdownProps {
 pub struct DmMarkdownOptions {
     /// Whether safe raw HTML is passed through to the rendered output.
     pub allow_html: bool,
+    /// Optional directory URL used to resolve relative link and image destinations.
+    pub base_url: Option<String>,
     /// Custom element tag names that may be rendered instead of entity-escaped.
     pub custom_elements: Vec<String>,
     /// Whether valid CSS colors in inline code receive a visual color chip.
@@ -56,6 +61,7 @@ impl Default for DmMarkdownOptions {
     fn default() -> Self {
         Self {
             allow_html: true,
+            base_url: None,
             custom_elements: Vec::new(),
             color_chips: true,
             front_matter: FrontMatterMode::Render,
@@ -75,6 +81,7 @@ pub fn dm_markdown(props: &DmMarkdownProps) -> Html {
         &props.markdown,
         DmMarkdownOptions {
             allow_html: props.allow_html,
+            base_url: props.base_url.clone(),
             custom_elements: props.custom_elements.clone(),
             color_chips: props.color_chips,
             front_matter: props.front_matter,
@@ -343,7 +350,11 @@ fn sanitize_event<'a>(event: Event<'a>, options: &DmMarkdownOptions) -> Event<'a
             id,
         }) => Event::Start(Tag::Link {
             link_type,
-            dest_url: safe_url(dest_url),
+            dest_url: if link_type == LinkType::Email {
+                safe_url(dest_url)
+            } else {
+                resolve_url(dest_url, options.base_url.as_deref())
+            },
             title,
             id,
         }),
@@ -354,7 +365,7 @@ fn sanitize_event<'a>(event: Event<'a>, options: &DmMarkdownOptions) -> Event<'a
             id,
         }) => Event::Start(Tag::Image {
             link_type,
-            dest_url: safe_url(dest_url),
+            dest_url: resolve_url(dest_url, options.base_url.as_deref()),
             title,
             id,
         }),
@@ -5058,6 +5069,119 @@ fn escape_html(value: &str) -> String {
     escaped
 }
 
+fn resolve_url<'a>(url: CowStr<'a>, base_url: Option<&str>) -> CowStr<'a> {
+    let url = safe_url(url);
+    let Some(base_url) = base_url.filter(|base_url| !base_url.is_empty()) else {
+        return url;
+    };
+
+    if url.is_empty() || !is_relative_path_url(&url) {
+        return url;
+    }
+
+    if !is_resolvable_base_url(base_url) {
+        return CowStr::Borrowed("");
+    }
+
+    safe_url(CowStr::Boxed(
+        join_directory_url(base_url, &url).into_boxed_str(),
+    ))
+}
+
+fn is_relative_path_url(url: &str) -> bool {
+    let normalized = normalize_url_for_safety(url);
+
+    !normalized.is_empty()
+        && !normalized.starts_with(['/', '#', '?'])
+        && url_scheme_end(&normalized).is_none()
+}
+
+fn is_resolvable_base_url(url: &str) -> bool {
+    let normalized = normalize_url_for_safety(url);
+
+    !normalized.is_empty()
+        && !normalized.starts_with(['#', '?'])
+        && (normalized.starts_with('/')
+            || normalized.starts_with("http://")
+            || normalized.starts_with("https://")
+            || url_scheme_end(&normalized).is_none())
+}
+
+fn join_directory_url(base_url: &str, relative_url: &str) -> String {
+    let base_end = base_url.find(['?', '#']).unwrap_or(base_url.len());
+    let base_url = &base_url[..base_end];
+    let relative_suffix_start = relative_url.find(['?', '#']).unwrap_or(relative_url.len());
+    let (relative_path, relative_suffix) = relative_url.split_at(relative_suffix_start);
+    let (prefix, base_path) = split_url_prefix(base_url);
+
+    let mut combined_path = String::with_capacity(base_path.len() + relative_path.len() + 1);
+    combined_path.push_str(base_path);
+    if !combined_path.is_empty() && !combined_path.ends_with('/') {
+        combined_path.push('/');
+    }
+    combined_path.push_str(relative_path);
+    if !prefix.is_empty() && !combined_path.starts_with('/') {
+        combined_path.insert(0, '/');
+    }
+
+    let path = normalize_url_path(&combined_path);
+    format!("{prefix}{path}{relative_suffix}")
+}
+
+fn split_url_prefix(url: &str) -> (&str, &str) {
+    let authority_start = if url
+        .get(..7)
+        .is_some_and(|scheme| scheme.eq_ignore_ascii_case("http://"))
+    {
+        7
+    } else if url
+        .get(..8)
+        .is_some_and(|scheme| scheme.eq_ignore_ascii_case("https://"))
+    {
+        8
+    } else if url.starts_with("//") {
+        2
+    } else {
+        return ("", url);
+    };
+
+    let path_start = url[authority_start..]
+        .find('/')
+        .map_or(url.len(), |offset| authority_start + offset);
+    url.split_at(path_start)
+}
+
+fn normalize_url_path(path: &str) -> String {
+    let absolute = path.starts_with('/');
+    let directory = path.ends_with('/')
+        || path.ends_with("/.")
+        || path.ends_with("/..")
+        || matches!(path, "." | "..");
+    let path = path.strip_prefix('/').unwrap_or(path);
+    let mut segments = Vec::new();
+
+    for segment in path.split('/') {
+        match segment {
+            "." => {}
+            ".." if segments.last().is_some_and(|segment| *segment != "..") => {
+                segments.pop();
+            }
+            ".." if !absolute => segments.push(segment),
+            ".." => {}
+            _ => segments.push(segment),
+        }
+    }
+
+    let mut normalized = segments.join("/");
+    if absolute {
+        normalized.insert(0, '/');
+    }
+    if directory && !normalized.ends_with('/') {
+        normalized.push('/');
+    }
+    normalized
+}
+
 fn safe_url(url: CowStr<'_>) -> CowStr<'_> {
     if is_safe_url(&url) {
         url
@@ -5067,12 +5191,7 @@ fn safe_url(url: CowStr<'_>) -> CowStr<'_> {
 }
 
 fn is_safe_url(url: &str) -> bool {
-    let normalized = url
-        .trim_start()
-        .chars()
-        .filter(|ch| !ch.is_ascii_whitespace() && !ch.is_ascii_control())
-        .collect::<String>()
-        .to_ascii_lowercase();
+    let normalized = normalize_url_for_safety(url);
 
     if normalized.is_empty()
         || normalized.starts_with('#')
@@ -5086,11 +5205,20 @@ fn is_safe_url(url: &str) -> bool {
         return true;
     }
 
-    let scheme_end = normalized
-        .find([':', '/', '?', '#'])
-        .filter(|&index| normalized.as_bytes()[index] == b':');
+    url_scheme_end(&normalized).is_none()
+}
 
-    scheme_end.is_none()
+fn normalize_url_for_safety(url: &str) -> String {
+    url.trim_start()
+        .chars()
+        .filter(|ch| !ch.is_ascii_whitespace() && !ch.is_ascii_control())
+        .collect::<String>()
+        .to_ascii_lowercase()
+}
+
+fn url_scheme_end(url: &str) -> Option<usize> {
+    url.find([':', '/', '?', '#'])
+        .filter(|&index| url.as_bytes()[index] == b':')
 }
 
 #[cfg(test)]
@@ -5374,6 +5502,127 @@ mod tests {
         assert!(html.contains(r#"<a href="https://example.com">external</a>"#));
         assert!(html.contains(r#"<a href="docs/start.md">relative</a>"#));
         assert!(html.contains(r#"<img src="/images/logo.png" alt="asset" />"#));
+    }
+
+    #[test]
+    fn resolves_relative_link_and_image_urls_against_a_directory_base() {
+        let html = render_markdown_to_html_with_options(
+            "[metadata](./meta.json)\n\n![preview](images/preview.png)\n\n[cover](../cover.png?download=1#preview)",
+            DmMarkdownOptions {
+                base_url: Some("/api/notes/42/attachments/".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert!(html.contains(r#"href="/api/notes/42/attachments/meta.json""#));
+        assert!(html.contains(r#"src="/api/notes/42/attachments/images/preview.png""#));
+        assert!(html.contains(r#"href="/api/notes/42/cover.png?download=1#preview""#));
+    }
+
+    #[test]
+    fn treats_a_base_without_a_trailing_slash_as_a_directory() {
+        let html = render_markdown_to_html_with_options(
+            "[metadata](meta.json)",
+            DmMarkdownOptions {
+                base_url: Some("https://files.example.test/notes/42".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert!(html.contains(r#"href="https://files.example.test/notes/42/meta.json""#));
+    }
+
+    #[test]
+    fn preserves_directory_and_empty_path_segment_semantics() {
+        let html = render_markdown_to_html_with_options(
+            "[current](.) [parent](..) [child-current](child/.) [child-parent](child/..) [repeated](images//preview.png)",
+            DmMarkdownOptions {
+                base_url: Some("/api//notes/42/attachments/".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert_eq!(
+            html.matches(r#"href="/api//notes/42/attachments/""#)
+                .count(),
+            2
+        );
+        assert!(html.contains(r#"href="/api//notes/42/""#));
+        assert!(html.contains(r#"href="/api//notes/42/attachments/child/""#));
+        assert!(html.contains(r#"href="/api//notes/42/attachments/images//preview.png""#));
+    }
+
+    #[test]
+    fn does_not_treat_a_root_relative_path_fragment_as_an_authority() {
+        let html = render_markdown_to_html_with_options(
+            "[metadata](meta.json)",
+            DmMarkdownOptions {
+                base_url: Some("/api/://notes/".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert!(html.contains(r#"href="/api/://notes/meta.json""#));
+    }
+
+    #[test]
+    fn leaves_non_path_urls_and_plain_text_unchanged_with_a_base() {
+        let html = render_markdown_to_html_with_options(
+            "[https](https://example.com/a) [http](http://example.com/b) [mail](mailto:team@example.com) [root](/docs) [cdn](//cdn.example.com/a) [fragment](#section) [query](?view=raw)\n\nPlain ./meta.json",
+            DmMarkdownOptions {
+                base_url: Some("/api/notes/42/attachments/".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        for destination in [
+            "https://example.com/a",
+            "http://example.com/b",
+            "mailto:team@example.com",
+            "/docs",
+            "//cdn.example.com/a",
+            "#section",
+            "?view=raw",
+        ] {
+            assert!(html.contains(&format!(r#"href="{destination}""#)));
+        }
+        assert!(html.contains("Plain ./meta.json"));
+    }
+
+    #[test]
+    fn leaves_email_autolinks_unchanged_with_a_base() {
+        let html = render_markdown_to_html_with_options(
+            "Contact <team@example.com>",
+            DmMarkdownOptions {
+                base_url: Some("/api/notes/42/attachments/".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert!(html.contains(r#"href="mailto:team@example.com""#));
+    }
+
+    #[test]
+    fn base_url_does_not_bypass_url_safety() {
+        let unsafe_destination = render_markdown_to_html_with_options(
+            "[bad](javascript:alert(1))",
+            DmMarkdownOptions {
+                base_url: Some("/api/notes/42/attachments/".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+        assert!(unsafe_destination.contains(r#"href="""#));
+        assert!(!unsafe_destination.contains("javascript:"));
+
+        let unsafe_base = render_markdown_to_html_with_options(
+            "[metadata](meta.json)",
+            DmMarkdownOptions {
+                base_url: Some("javascript:alert(1)".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+        assert!(unsafe_base.contains(r#"href="""#));
+        assert!(!unsafe_base.contains("javascript:"));
     }
 
     #[test]
