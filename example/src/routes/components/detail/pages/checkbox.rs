@@ -1,11 +1,30 @@
 use crate::routes::components::catalog::ComponentSpec;
 use crate::routes::components::detail::page::{ComponentPage, STANDARD_API};
 use crate::routes::components::palette::{variant, PaletteColor};
+use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_duskmoon::Checkbox;
 
 pub fn page(spec: &'static ComponentSpec) -> ComponentPage {
     ComponentPage::new(spec, usage, STANDARD_API, demo, color_variant)
+}
+
+#[function_component(IndeterminateCheckbox)]
+fn indeterminate_checkbox() -> Html {
+    let input_ref = use_node_ref();
+
+    {
+        let input_ref = input_ref.clone();
+        use_effect_with((), move |_| {
+            if let Some(input) = input_ref.cast::<HtmlInputElement>() {
+                input.set_indeterminate(true);
+            }
+        });
+    }
+
+    html! {
+        <input ref={input_ref} class="checkbox checkbox-info" type="checkbox" />
+    }
 }
 
 fn usage(_: &ComponentSpec) -> String {
@@ -32,6 +51,10 @@ fn demo(_: &ComponentSpec) -> Html {
             <label class="checkbox-label">
                 <input class="checkbox checkbox-secondary" type="checkbox" />
                 <span>{ "Invite me to beta programs" }</span>
+            </label>
+            <label class="checkbox-label">
+                <IndeterminateCheckbox />
+                <span>{ "Select all release channels" }</span>
             </label>
             <label class="checkbox-label">
                 <input class="checkbox checkbox-success" type="checkbox" checked={true} disabled={true} />

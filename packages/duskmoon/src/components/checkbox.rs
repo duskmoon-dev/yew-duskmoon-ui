@@ -12,7 +12,11 @@ pub struct CheckboxProps {
 
 #[function_component(Checkbox)]
 pub fn checkbox(props: &CheckboxProps) -> Html {
-    let mut classes = classes!("checkbox");
+    let mut classes = if props.children.is_empty() {
+        classes!("checkbox")
+    } else {
+        classes!("checkbox-group")
+    };
     if let Some(variant) = &props.variant {
         classes.push(format!("checkbox-{}", variant));
     }
