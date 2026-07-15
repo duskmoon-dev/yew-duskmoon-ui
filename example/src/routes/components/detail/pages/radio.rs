@@ -1,10 +1,16 @@
 use crate::routes::components::catalog::ComponentSpec;
-use crate::routes::components::detail::page::{ApiRow, ComponentPage, primary_variant};
-use crate::routes::components::palette::{PaletteColor, variant};
+use crate::routes::components::detail::page::{primary_variant, ApiRow, ComponentPage};
+use crate::routes::components::palette::{variant, PaletteColor};
 use yew::prelude::*;
 use yew_duskmoon::Radio;
 
 const RADIO_API: &[ApiRow] = &[
+    ApiRow {
+        prop: "aria_label",
+        ty: "AttrValue",
+        default: "Radio options",
+        docs: "Accessible name applied when Radio wraps a group of options.",
+    },
     ApiRow {
         prop: "class",
         ty: "Classes",
@@ -30,34 +36,50 @@ pub fn page(spec: &'static ComponentSpec) -> ComponentPage {
 }
 
 fn usage(_: &ComponentSpec) -> String {
-    "use yew_duskmoon::Radio;\n\nhtml! {\n    <label class=\"radio-label\">\n        <Radio variant={Some(\"primary\".to_owned())} class=\"demo-radio\" />\n        <span>{ \"Standard shipping\" }</span>\n    </label>\n}".to_owned()
+    r#"use yew_duskmoon::Radio;
+
+html! {
+    <Radio variant={Some("primary".to_owned())} class="radio-group" aria_label="Shipping method">
+        <label class="radio-label">
+            <input class="radio radio-primary" type="radio" name="shipping" value="standard" checked={true} />
+            <span>{ "Standard shipping" }</span>
+        </label>
+        <label class="radio-label">
+            <input class="radio radio-primary" type="radio" name="shipping" value="express" />
+            <span>{ "Express shipping" }</span>
+        </label>
+    </Radio>
+}"#
+    .to_owned()
 }
 
 fn demo(_: &ComponentSpec) -> Html {
     html! {
-        <div class="radio-group">
+        <Radio variant={primary_variant()} class="component-detail-demo-control radio-group" aria_label="Delivery speed">
             <span class="radio-group-label">{ "Delivery speed" }</span>
             <label class="radio-label">
-                <Radio variant={primary_variant()} class="demo-radio" />
+                <input class="radio radio-primary" type="radio" name="delivery-speed" value="standard" checked={true} />
                 <span>{ "Standard" }</span>
             </label>
             <label class="radio-label">
-                <Radio class="demo-radio" />
+                <input class="radio radio-primary" type="radio" name="delivery-speed" value="express" />
                 <span>{ "Express" }</span>
             </label>
             <label class="radio-label">
-                <Radio class="demo-radio" />
+                <input class="radio radio-primary" type="radio" name="delivery-speed" value="overnight" />
                 <span>{ "Overnight" }</span>
             </label>
-        </div>
+        </Radio>
     }
 }
 
 fn color_variant(color: PaletteColor) -> Html {
     html! {
-        <label class="radio-label">
-            <Radio variant={variant(color)} class="demo-radio" />
-            <span>{ color.label }</span>
-        </label>
+        <Radio variant={variant(color)} class="component-detail-color-demo" aria_label={format!("{} radio", color.label)}>
+            <label class="radio-label">
+                <input class={classes!("radio", "component-detail-color-radio", format!("radio-{}", color.key))} type="radio" checked={true} />
+                <span>{ color.label }</span>
+            </label>
+        </Radio>
     }
 }
