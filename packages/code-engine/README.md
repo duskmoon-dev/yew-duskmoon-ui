@@ -14,6 +14,11 @@ The first milestone intentionally exposes a small but stable surface:
 The crate is structured to grow into a fuller editor engine over time without making
 `yew-duskmoon` own the editor internals.
 
+`CodeLanguage::ALL` contains every supported mode: plain text, Rust, Zig, C, C++,
+Objective-C, C#/.NET, Java, Kotlin, Swift, Python, Ruby, PHP, JavaScript, TypeScript,
+JSON, Markdown, HTML, CSS, Sass, SCSS, Less, Elixir, Erlang, Lisp, Emacs Lisp, Shell,
+Bash, Zsh, Nix, Assembly, WebAssembly, TOML, and YAML.
+
 ```rust
 use yew::prelude::*;
 use code_engine::{CodeEditor, CodeLanguage};

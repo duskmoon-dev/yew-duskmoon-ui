@@ -3543,6 +3543,15 @@ textarea {
     background-size: 32px 32px;
 }
 
+.code-engine-language-grid {
+    display: grid;
+    flex: 1 1 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    width: 100%;
+    min-width: 0;
+}
+
 .detail-color-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
