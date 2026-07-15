@@ -796,7 +796,7 @@ td {
 
 input,
 textarea {
-    color: var(--dm-ink);
+    color: var(--dm-paper);
 }
 
 /* WORKAROUND(upstream): duskmoon-dev/duskmoonui#45 - bridge complete palette variants in the example until core owns all component color classes. */
