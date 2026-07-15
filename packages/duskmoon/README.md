@@ -70,11 +70,14 @@ use yew_duskmoon::{DmMarkdown, FrontMatterMode};
 html! {
     <DmMarkdown
         markdown={"---\ntitle: Example\n---\n# Document\n\nColor: `#4C86FC`"}
+        base_url={Some("/api/notes/42/attachments/".to_owned())}
         color_chips={true}
         front_matter={FrontMatterMode::Render}
     />
 }
 ```
+
+Relative Markdown link and image destinations are preserved by default. Set `base_url` to resolve them against a directory URL; absolute, external, fragment, and query-only destinations remain unchanged.
 
 For direct string rendering, configure the same behavior with `DmMarkdownOptions` and `render_markdown_to_html_with_options`. `FrontMatterMode::Hidden` removes initial front matter while keeping the body, and `FrontMatterMode::Disabled` parses the complete source as ordinary Markdown.
 

@@ -18,6 +18,12 @@ const DM_MARKDOWN_API: &[ApiRow] = &[
         docs: "Renders safe raw HTML while escaping style, script, and object tags.",
     },
     ApiRow {
+        prop: "base_url",
+        ty: "Option<String>",
+        default: "None",
+        docs: "Resolves relative Markdown link and image destinations against a directory URL.",
+    },
+    ApiRow {
         prop: "custom_elements",
         ty: "Vec<String>",
         default: "empty",
