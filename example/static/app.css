@@ -2185,6 +2185,48 @@ textarea {
     color: var(--component-color);
 }
 
+.markdown-body .dm-color-code {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.markdown-body .dm-color-chip {
+    position: relative;
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 1em;
+    height: 1em;
+    overflow: hidden;
+    border: 1px solid color-mix(in oklch, var(--color-base-content, #111827) 56%, var(--color-surface, #ffffff));
+    border-radius: 3px;
+    background-color: var(--color-surface, #ffffff);
+    background-image: conic-gradient(
+        color-mix(in oklch, var(--color-base-content, #111827) 22%, transparent) 25%,
+        transparent 0 50%,
+        color-mix(in oklch, var(--color-base-content, #111827) 22%, transparent) 0 75%,
+        transparent 0
+    );
+    background-size: 6px 6px;
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-surface, #ffffff) 68%, transparent);
+}
+
+.markdown-body .dm-color-chip-swatch {
+    position: absolute;
+    inset: 0;
+}
+
+.markdown-body .dm-front-matter {
+    margin-block-end: 1rem;
+}
+
+.markdown-body .dm-front-matter .dm-code-block {
+    margin-block-end: 0;
+    border-left: 3px solid color-mix(in oklch, var(--component-color, var(--dm-copper)) 82%, white);
+}
+
 .markdown-body .dm-code-block {
     --dm-syntax-text: #d7dee9;
     --dm-syntax-keyword: #ffb454;
@@ -3512,6 +3554,13 @@ textarea {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
+}
+
+.component-detail-markdown-stack {
+    display: grid;
+    gap: 24px;
+    width: 100%;
+    min-width: 0;
 }
 
 .component-detail-demo-control,

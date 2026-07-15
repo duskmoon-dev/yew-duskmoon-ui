@@ -2,7 +2,7 @@ use crate::routes::components::catalog::ComponentSpec;
 use crate::routes::components::detail::page::{primary_variant, ApiRow, ComponentPage};
 use crate::routes::components::palette::{variant, PaletteColor};
 use yew::prelude::*;
-use yew_duskmoon::DmMarkdown;
+use yew_duskmoon::{DmMarkdown, FrontMatterMode};
 
 const DM_MARKDOWN_API: &[ApiRow] = &[
     ApiRow {
@@ -24,6 +24,18 @@ const DM_MARKDOWN_API: &[ApiRow] = &[
         docs: "Allowed custom element tag names. Empty disables custom elements.",
     },
     ApiRow {
+        prop: "color_chips",
+        ty: "bool",
+        default: "true",
+        docs: "Adds a visible color chip to inline code containing one valid CSS color.",
+    },
+    ApiRow {
+        prop: "front_matter",
+        ty: "FrontMatterMode",
+        default: "Render",
+        docs: "Renders, hides, or disables recognition of initial YAML front matter.",
+    },
+    ApiRow {
         prop: "markdown",
         ty: "AttrValue",
         default: "empty",
@@ -37,9 +49,27 @@ const DM_MARKDOWN_API: &[ApiRow] = &[
     },
 ];
 
-const SAMPLE_MARKDOWN: &str = r#"# DmMarkdown rendering
+const SAMPLE_MARKDOWN: &str = r#"---
+title: DmMarkdown feature showcase
+tags:
+  - rust
+  - yew
+accent: '#4C86FC'
+---
+# DmMarkdown rendering
 
 Dm Markdown renders source text into the same typography scope as `MarkdownBody`, with highlighted fenced code and Mermaid diagrams.
+
+## Inline color chips
+
+| Color | Inline code |
+| --- | --- |
+| Brand blue | `#4C86FC` |
+| White | `#fff` |
+| Black | `#000` |
+| Transparent red | `#FF000080` |
+
+Function colors work too: `rgb(255, 0, 0)`, `rgba(255, 0, 0, 0.5)`, `hsl(210, 100%, 50%)`, and `hsla(210, 100%, 50%, 0.5)`.
 
 ## Raw HTML
 
@@ -391,6 +421,23 @@ export function hello(user: User): string {
 - [x] Render Mermaid chart blocks
 "#;
 
+const HIDDEN_FRONT_MATTER_MARKDOWN: &str = r#"---
+title: Hidden metadata
+owner: docs
+---
+## Hidden front matter
+
+Only the Markdown body is rendered in hidden mode.
+"#;
+
+const DISABLED_FRONT_MATTER_MARKDOWN: &str = r#"---
+title: Disabled front matter
+---
+# Disabled front matter recognition
+
+Delimiter lines are parsed as ordinary Markdown in disabled mode.
+"#;
+
 pub fn page(spec: &'static ComponentSpec) -> ComponentPage {
     ComponentPage::new(spec, usage, DM_MARKDOWN_API, demo, color_variant)
 }
@@ -401,11 +448,25 @@ fn usage(_: &ComponentSpec) -> String {
 
 fn demo(_: &ComponentSpec) -> Html {
     html! {
-        <DmMarkdown
-            variant={primary_variant()}
-            class="component-detail-demo-control"
-            markdown={SAMPLE_MARKDOWN}
-        />
+        <div class="component-detail-markdown-stack">
+            <DmMarkdown
+                variant={primary_variant()}
+                class="component-detail-demo-control"
+                markdown={SAMPLE_MARKDOWN}
+            />
+            <DmMarkdown
+                variant={primary_variant()}
+                class="component-detail-demo-control"
+                front_matter={FrontMatterMode::Hidden}
+                markdown={HIDDEN_FRONT_MATTER_MARKDOWN}
+            />
+            <DmMarkdown
+                variant={primary_variant()}
+                class="component-detail-demo-control"
+                front_matter={FrontMatterMode::Disabled}
+                markdown={DISABLED_FRONT_MATTER_MARKDOWN}
+            />
+        </div>
     }
 }
 

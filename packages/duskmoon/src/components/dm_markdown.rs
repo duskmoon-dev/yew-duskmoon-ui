@@ -2,24 +2,54 @@ use pulldown_cmark::{html, CodeBlockKind, CowStr, Event, Options, Parser, Tag, T
 use yew::prelude::*;
 use yew::virtual_dom::AttrValue;
 
+/// Controls how YAML front matter at the start of a Markdown document is handled.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum FrontMatterMode {
+    /// Render the extracted YAML through the fenced-code renderer before the body.
+    #[default]
+    Render,
+    /// Remove the extracted YAML and render only the Markdown body.
+    Hidden,
+    /// Parse the complete source as ordinary Markdown without recognizing front matter.
+    Disabled,
+}
+
 #[derive(Properties, Clone, PartialEq)]
 pub struct DmMarkdownProps {
+    /// Extra CSS classes appended to the Markdown root.
     #[prop_or_default]
     pub class: Classes,
+    /// Whether safe raw HTML is passed through to the rendered output.
     #[prop_or(true)]
     pub allow_html: bool,
+    /// Custom element tag names that may be rendered instead of entity-escaped.
     #[prop_or_default]
     pub custom_elements: Vec<String>,
+    /// Whether valid CSS colors in inline code receive a visual color chip.
+    #[prop_or(true)]
+    pub color_chips: bool,
+    /// Controls extraction and presentation of YAML front matter.
+    #[prop_or(FrontMatterMode::Render)]
+    pub front_matter: FrontMatterMode,
+    /// Markdown source to render.
     #[prop_or_default]
     pub markdown: AttrValue,
+    /// Optional color variant used to build the `markdown-body-{variant}` class.
     #[prop_or_default]
     pub variant: Option<String>,
 }
 
+/// Options used by [`render_markdown_to_html_with_options`].
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DmMarkdownOptions {
+    /// Whether safe raw HTML is passed through to the rendered output.
     pub allow_html: bool,
+    /// Custom element tag names that may be rendered instead of entity-escaped.
     pub custom_elements: Vec<String>,
+    /// Whether valid CSS colors in inline code receive a visual color chip.
+    pub color_chips: bool,
+    /// Controls extraction and presentation of YAML front matter.
+    pub front_matter: FrontMatterMode,
 }
 
 impl Default for DmMarkdownOptions {
@@ -27,6 +57,8 @@ impl Default for DmMarkdownOptions {
         Self {
             allow_html: true,
             custom_elements: Vec::new(),
+            color_chips: true,
+            front_matter: FrontMatterMode::Render,
         }
     }
 }
@@ -44,6 +76,8 @@ pub fn dm_markdown(props: &DmMarkdownProps) -> Html {
         DmMarkdownOptions {
             allow_html: props.allow_html,
             custom_elements: props.custom_elements.clone(),
+            color_chips: props.color_chips,
+            front_matter: props.front_matter,
         },
     );
 
@@ -59,12 +93,74 @@ pub fn render_markdown_to_html(markdown: &str) -> String {
 }
 
 pub fn render_markdown_to_html_with_options(markdown: &str, options: DmMarkdownOptions) -> String {
+    let front_matter = if options.front_matter == FrontMatterMode::Disabled {
+        None
+    } else {
+        split_front_matter(markdown)
+    };
+    let body = front_matter
+        .as_ref()
+        .map_or(markdown, |front_matter| front_matter.body);
+
     let parser =
-        Parser::new_ext(markdown, markdown_options()).map(|event| sanitize_event(event, &options));
+        Parser::new_ext(body, markdown_options()).map(|event| sanitize_event(event, &options));
+    let parser = transform_inline_colors(parser, options.color_chips);
     let parser = render_special_blocks(parser);
     let mut output = String::new();
+
+    if options.front_matter == FrontMatterMode::Render {
+        if let Some(front_matter) = front_matter {
+            output.push_str(&render_front_matter(front_matter.source));
+        }
+    }
+
     html::push_html(&mut output, parser.into_iter());
     output
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct FrontMatter<'a> {
+    source: &'a str,
+    body: &'a str,
+}
+
+fn split_front_matter(markdown: &str) -> Option<FrontMatter<'_>> {
+    let markdown = markdown.strip_prefix('\u{feff}').unwrap_or(markdown);
+    let (opening, mut cursor, has_line_ending) = logical_line(markdown, 0)?;
+
+    if opening != "---" || !has_line_ending {
+        return None;
+    }
+
+    let source_start = cursor;
+    while cursor < markdown.len() {
+        let line_start = cursor;
+        let (line, next, _) = logical_line(markdown, cursor)?;
+
+        if matches!(line, "---" | "...") {
+            return Some(FrontMatter {
+                source: &markdown[source_start..line_start],
+                body: &markdown[next..],
+            });
+        }
+
+        cursor = next;
+    }
+
+    None
+}
+
+fn logical_line(source: &str, start: usize) -> Option<(&str, usize, bool)> {
+    let rest = source.get(start..)?;
+    if let Some(newline) = rest.find('\n') {
+        let line_end = start + newline;
+        let line = rest[..newline]
+            .strip_suffix('\r')
+            .unwrap_or(&rest[..newline]);
+        Some((line, line_end + 1, true))
+    } else {
+        Some((rest, source.len(), false))
+    }
 }
 
 fn markdown_options() -> Options {
@@ -72,6 +168,168 @@ fn markdown_options() -> Options {
         | Options::ENABLE_STRIKETHROUGH
         | Options::ENABLE_TASKLISTS
         | Options::ENABLE_GFM
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CssColor {
+    Hex,
+    Rgb,
+    Rgba,
+    Hsl,
+    Hsla,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum ColorChannelUnit {
+    Number,
+    Percentage,
+}
+
+fn transform_inline_colors<'a>(
+    events: impl IntoIterator<Item = Event<'a>>,
+    enabled: bool,
+) -> Vec<Event<'a>> {
+    events
+        .into_iter()
+        .map(|event| match event {
+            Event::Code(code) if enabled && parse_css_color(&code).is_some() => {
+                Event::InlineHtml(CowStr::Boxed(render_color_chip(&code).into_boxed_str()))
+            }
+            event => event,
+        })
+        .collect()
+}
+
+fn parse_css_color(value: &str) -> Option<CssColor> {
+    if value.is_empty() || !value.is_ascii() || value.trim() != value {
+        return None;
+    }
+
+    if let Some(hex) = value.strip_prefix('#') {
+        return (matches!(hex.len(), 3 | 4 | 6 | 8)
+            && hex.chars().all(|ch| ch.is_ascii_hexdigit()))
+        .then_some(CssColor::Hex);
+    }
+
+    let opening = value.find('(')?;
+    let name = &value[..opening];
+    let arguments = value.get(opening + 1..)?.strip_suffix(')')?;
+    if name.is_empty() || arguments.contains('(') || arguments.contains(')') {
+        return None;
+    }
+
+    let components = arguments.split(',').map(str::trim).collect::<Vec<_>>();
+    match name.to_ascii_lowercase().as_str() {
+        "rgb" if valid_rgb_components(&components, false) => Some(CssColor::Rgb),
+        "rgba" if valid_rgb_components(&components, true) => Some(CssColor::Rgba),
+        "hsl" if valid_hsl_components(&components, false) => Some(CssColor::Hsl),
+        "hsla" if valid_hsl_components(&components, true) => Some(CssColor::Hsla),
+        _ => None,
+    }
+}
+
+fn valid_rgb_components(components: &[&str], has_alpha: bool) -> bool {
+    if components.len() != if has_alpha { 4 } else { 3 } {
+        return false;
+    }
+
+    let Some(first_unit) = parse_rgb_channel(components[0]) else {
+        return false;
+    };
+    if !components[1..3]
+        .iter()
+        .all(|component| parse_rgb_channel(component) == Some(first_unit))
+    {
+        return false;
+    }
+
+    !has_alpha || parse_alpha(components[3])
+}
+
+fn valid_hsl_components(components: &[&str], has_alpha: bool) -> bool {
+    if components.len() != if has_alpha { 4 } else { 3 } {
+        return false;
+    }
+
+    parse_hue(components[0])
+        && parse_percentage(components[1], 100.0)
+        && parse_percentage(components[2], 100.0)
+        && (!has_alpha || parse_alpha(components[3]))
+}
+
+fn parse_rgb_channel(value: &str) -> Option<ColorChannelUnit> {
+    if let Some(percentage) = value.strip_suffix('%') {
+        parse_number_in_range(percentage, 0.0, 100.0).then_some(ColorChannelUnit::Percentage)
+    } else {
+        parse_number_in_range(value, 0.0, 255.0).then_some(ColorChannelUnit::Number)
+    }
+}
+
+fn parse_hue(value: &str) -> bool {
+    let value = if value
+        .get(value.len().saturating_sub(3)..)
+        .is_some_and(|unit| unit.eq_ignore_ascii_case("deg"))
+    {
+        &value[..value.len() - 3]
+    } else {
+        value
+    };
+
+    parse_number_in_range(value, 0.0, 360.0)
+}
+
+fn parse_percentage(value: &str, maximum: f64) -> bool {
+    value
+        .strip_suffix('%')
+        .is_some_and(|value| parse_number_in_range(value, 0.0, maximum))
+}
+
+fn parse_alpha(value: &str) -> bool {
+    value.strip_suffix('%').map_or_else(
+        || parse_number_in_range(value, 0.0, 1.0),
+        |value| parse_number_in_range(value, 0.0, 100.0),
+    )
+}
+
+fn parse_number_in_range(value: &str, minimum: f64, maximum: f64) -> bool {
+    parse_css_number(value).is_some_and(|value| (minimum..=maximum).contains(&value))
+}
+
+fn parse_css_number(value: &str) -> Option<f64> {
+    let bytes = value.as_bytes();
+    let mut index = usize::from(matches!(bytes.first(), Some(b'+' | b'-')));
+    let mut integer_digits = 0;
+
+    while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+        integer_digits += 1;
+        index += 1;
+    }
+
+    let mut fractional_digits = 0;
+    if bytes.get(index) == Some(&b'.') {
+        index += 1;
+        while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+            fractional_digits += 1;
+            index += 1;
+        }
+        if fractional_digits == 0 {
+            return None;
+        }
+    }
+
+    if index != bytes.len() || integer_digits + fractional_digits == 0 {
+        return None;
+    }
+
+    value.parse::<f64>().ok().filter(|value| value.is_finite())
+}
+
+fn render_color_chip(value: &str) -> String {
+    let text = escape_html(value);
+    let attribute = escape_attribute(value);
+    format!(
+        "<code class=\"dm-color-code\">{text}<span class=\"dm-color-chip\" role=\"img\" aria-label=\"Color {attribute}\"><span class=\"dm-color-chip-swatch\" style=\"background-color:{attribute}\" aria-hidden=\"true\"></span></span></code>"
+    )
 }
 
 fn sanitize_event<'a>(event: Event<'a>, options: &DmMarkdownOptions) -> Event<'a> {
@@ -348,6 +606,13 @@ fn code_block_language(kind: CodeBlockKind<'_>) -> String {
     }
 }
 
+fn render_front_matter(source: &str) -> String {
+    format!(
+        "<div class=\"dm-front-matter\">{}</div>",
+        render_fenced_block("yaml", source)
+    )
+}
+
 fn render_fenced_block(language: &str, source: &str) -> String {
     let language = normalize_language(language);
     if matches!(language, "mermaid" | "mmd") {
@@ -370,6 +635,7 @@ fn normalize_language(language: &str) -> &str {
         "rs" | "rust" => "rust",
         "zig" => "zig",
         "ts" | "tsx" | "typescript" => "typescript",
+        "yaml" | "yml" => "yaml",
         "mermaid" | "mmd" => "mermaid",
         _ => "text",
     }
@@ -381,6 +647,7 @@ fn language_label(language: &str) -> &'static str {
         "go" => "Go",
         "rust" => "Rust",
         "typescript" => "TypeScript",
+        "yaml" => "YAML",
         "zig" => "Zig",
         _ => "Text",
     }
@@ -4461,7 +4728,11 @@ fn highlight_source(language: &str, source: &str) -> String {
 }
 
 fn highlight_line(language: &str, line: &str) -> String {
-    let comment = if language == "elixir" { "#" } else { "//" };
+    let comment = if matches!(language, "elixir" | "yaml") {
+        "#"
+    } else {
+        "//"
+    };
     let mut highlighted = String::new();
     let mut index = 0;
 
@@ -4824,7 +5095,11 @@ fn is_safe_url(url: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{render_markdown_to_html, render_markdown_to_html_with_options, DmMarkdownOptions};
+    use super::{
+        parse_css_color, render_color_chip, render_markdown_to_html,
+        render_markdown_to_html_with_options, split_front_matter, DmMarkdownOptions,
+        FrontMatterMode,
+    };
 
     #[test]
     fn renders_common_markdown() {
@@ -4835,6 +5110,192 @@ mod tests {
         assert!(html.contains("<h1>Release</h1>"));
         assert!(html.contains(r#"<input disabled="" type="checkbox" checked=""/>"#));
         assert!(html.contains("<table>"));
+    }
+
+    #[test]
+    fn parses_supported_hex_colors() {
+        for color in [
+            "#fff",
+            "#AbC",
+            "#ffff",
+            "#aBcD",
+            "#4c86fc",
+            "#4C86FC",
+            "#ff000080",
+            "#FF000080",
+        ] {
+            assert!(
+                parse_css_color(color).is_some(),
+                "expected {color} to parse"
+            );
+        }
+    }
+
+    #[test]
+    fn parses_supported_function_colors() {
+        for color in [
+            "rgb(255, 0, 0)",
+            "RGB(100%, 0%, 0%)",
+            "rgba(255, 0, 0, 0.5)",
+            "rgba(100%, 0%, 0%, 50%)",
+            "hsl(210, 100%, 50%)",
+            "HSL(210deg, 100%, 50%)",
+            "hsla(210, 100%, 50%, 0.5)",
+            "hsla(210deg, 100%, 50%, 50%)",
+        ] {
+            assert!(
+                parse_css_color(color).is_some(),
+                "expected {color} to parse"
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_malformed_and_out_of_range_colors() {
+        for color in [
+            "#ff",
+            "#fffff",
+            "#fffffff",
+            "#fffffffff",
+            "#ggg",
+            "#12_",
+            "rgb(256, 0, 0)",
+            "rgb(101%, 0%, 0%)",
+            "rgb(255, 0%, 0)",
+            "rgba(255, 0, 0, 1.01)",
+            "hsl(361, 100%, 50%)",
+            "hsl(210, 101%, 50%)",
+            "hsla(210, 100%, 50%, 101%)",
+            "rgb(255, 0, 0);color:red",
+            "var(--brand-color)",
+            "red",
+            " #fff",
+            "#fff ",
+        ] {
+            assert!(
+                parse_css_color(color).is_none(),
+                "expected {color} to be rejected"
+            );
+        }
+    }
+
+    #[test]
+    fn renders_inline_color_chips_and_preserves_text() {
+        let html = render_markdown_to_html("Primary `#4C86FC` and `rgba(255, 0, 0, 0.5)`.");
+
+        assert_eq!(html.matches(r#"class="dm-color-code""#).count(), 2);
+        assert!(html.contains("#4C86FC"));
+        assert!(html.contains("rgba(255, 0, 0, 0.5)"));
+        assert!(html.contains(r#"class="dm-color-chip" role="img" aria-label="Color #4C86FC""#));
+        assert!(html.contains(r#"style="background-color:#4C86FC""#));
+    }
+
+    #[test]
+    fn can_disable_inline_color_chips() {
+        let html = render_markdown_to_html_with_options(
+            "`#fff`",
+            DmMarkdownOptions {
+                color_chips: false,
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert_eq!(html, "<p><code>#fff</code></p>\n");
+        assert!(!html.contains("dm-color-chip"));
+    }
+
+    #[test]
+    fn does_not_transform_color_substrings_or_fenced_code() {
+        let inline = render_markdown_to_html("`color: #fff`");
+        assert_eq!(inline, "<p><code>color: #fff</code></p>\n");
+
+        let fenced = render_markdown_to_html("```css\n#fff\n```");
+        assert!(fenced.contains("#fff"));
+        assert!(!fenced.contains("dm-color-code"));
+        assert!(!fenced.contains("dm-color-chip"));
+    }
+
+    #[test]
+    fn escapes_generated_color_markup_and_ordinary_inline_code() {
+        let generated = render_color_chip("#fff\" onmouseover=\"alert(1)");
+        assert!(generated.contains("#fff&quot; onmouseover=&quot;alert(1)"));
+        assert!(!generated.contains(r#"onmouseover="alert(1)""#));
+
+        let html = render_markdown_to_html("`<img src=x onerror=alert(1)>`");
+        assert!(html.contains("&lt;img src=x onerror=alert(1)&gt;"));
+        assert!(!html.contains("<img"));
+        assert!(!html.contains("dm-color-chip"));
+    }
+
+    #[test]
+    fn splits_front_matter_with_dash_or_dot_delimiters() {
+        let dashes = split_front_matter("---\ntitle: Example\n---\n# Document").unwrap();
+        assert_eq!(dashes.source, "title: Example\n");
+        assert_eq!(dashes.body, "# Document");
+
+        let dots = split_front_matter("---\ntitle: Example\n...\n# Document").unwrap();
+        assert_eq!(dots.source, "title: Example\n");
+        assert_eq!(dots.body, "# Document");
+    }
+
+    #[test]
+    fn splits_front_matter_with_bom_empty_source_and_crlf() {
+        let bom = split_front_matter("\u{feff}---\ntitle: Example\n---\n# Document").unwrap();
+        assert_eq!(bom.source, "title: Example\n");
+        assert_eq!(bom.body, "# Document");
+
+        let empty = split_front_matter("---\n---\n# Document").unwrap();
+        assert_eq!(empty.source, "");
+        assert_eq!(empty.body, "# Document");
+
+        let crlf = split_front_matter("---\r\ntitle: Example\r\n---\r\n# Document\r\n").unwrap();
+        assert_eq!(crlf.source, "title: Example\r\n");
+        assert_eq!(crlf.body, "# Document\r\n");
+    }
+
+    #[test]
+    fn ignores_unclosed_or_non_initial_front_matter() {
+        let unclosed = "---\ntitle: Example\n# Document";
+        assert!(split_front_matter(unclosed).is_none());
+        let html = render_markdown_to_html(unclosed);
+        assert!(!html.contains("dm-front-matter"));
+        assert!(html.contains("title: Example"));
+
+        let later_rule = "Introduction\n\n---\ntitle: Not front matter\n---\n";
+        assert!(split_front_matter(later_rule).is_none());
+        assert!(!render_markdown_to_html(later_rule).contains("dm-front-matter"));
+    }
+
+    #[test]
+    fn renders_hides_or_disables_front_matter() {
+        let markdown = "---\ntitle: Example\n---\n# Document";
+
+        let rendered = render_markdown_to_html(markdown);
+        assert!(rendered.starts_with(r#"<div class="dm-front-matter">"#));
+        assert!(rendered.contains(r#"data-language="yaml""#));
+        assert!(rendered.contains(">YAML</span>"));
+        assert!(rendered.contains("Example"));
+        assert!(rendered.ends_with("<h1>Document</h1>\n"));
+
+        let hidden = render_markdown_to_html_with_options(
+            markdown,
+            DmMarkdownOptions {
+                front_matter: FrontMatterMode::Hidden,
+                ..DmMarkdownOptions::default()
+            },
+        );
+        assert_eq!(hidden, "<h1>Document</h1>\n");
+
+        let disabled = render_markdown_to_html_with_options(
+            markdown,
+            DmMarkdownOptions {
+                front_matter: FrontMatterMode::Disabled,
+                ..DmMarkdownOptions::default()
+            },
+        );
+        assert!(!disabled.contains("dm-front-matter"));
+        assert!(disabled.contains("title: Example"));
+        assert!(disabled.contains("<h1>Document</h1>"));
     }
 
     #[test]
@@ -4862,7 +5323,7 @@ mod tests {
             "Hello <span>world</span>",
             DmMarkdownOptions {
                 allow_html: false,
-                custom_elements: Vec::new(),
+                ..DmMarkdownOptions::default()
             },
         );
 
@@ -4884,8 +5345,8 @@ mod tests {
         let html = render_markdown_to_html_with_options(
             "<el-dm-alert><strong>safe</strong></el-dm-alert>\n\n<other-widget>blocked</other-widget>",
             DmMarkdownOptions {
-                allow_html: true,
                 custom_elements: vec!["el-dm-alert".to_owned()],
+                ..DmMarkdownOptions::default()
             },
         );
 

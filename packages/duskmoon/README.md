@@ -59,6 +59,25 @@ fn app() -> Html {
 }
 ```
 
+## Markdown rendering
+
+`DmMarkdown` renders initial YAML front matter by default and adds color previews to inline code containing a complete HEX, RGB(A), or HSL(A) color value. Named colors and unrecognized CSS expressions remain ordinary inline code.
+
+```rust
+use yew::prelude::*;
+use yew_duskmoon::{DmMarkdown, FrontMatterMode};
+
+html! {
+    <DmMarkdown
+        markdown={"---\ntitle: Example\n---\n# Document\n\nColor: `#4C86FC`"}
+        color_chips={true}
+        front_matter={FrontMatterMode::Render}
+    />
+}
+```
+
+For direct string rendering, configure the same behavior with `DmMarkdownOptions` and `render_markdown_to_html_with_options`. `FrontMatterMode::Hidden` removes initial front matter while keeping the body, and `FrontMatterMode::Disabled` parses the complete source as ordinary Markdown.
+
 ## Components
 
 Common exports include `Accordion`, `Alert`, `Appbar`, `Autocomplete`, `Avatar`, `Badge`, `BottomNavigation`, `Breadcrumbs`, `Button`, `Card`, `Checkbox`, `Chip`, `CodeBlock`, `CodeEditor`, `DatePicker`, `Dialog`, `DmMarkdown`, `Drawer`, `FileUpload`, `Form`, `Grid`, `Input`, `Link`, `List`, `MarkdownBody`, `Menu`, `Modal`, `Pagination`, `Progress`, `Radio`, `Select`, `Switch`, `Table`, `Tabs`, `Textarea`, `ThemeController`, `Toast`, `Tooltip`, `TreeSelect`, and `Typography`.
