@@ -22,7 +22,7 @@ pub struct DmMarkdownProps {
     /// Whether safe raw HTML is passed through to the rendered output.
     #[prop_or(true)]
     pub allow_html: bool,
-    /// Optional directory URL used to resolve relative link and image destinations.
+    /// Optional directory URL used to resolve relative Markdown and raw HTML URLs.
     #[prop_or_default]
     pub base_url: Option<String>,
     /// Custom element tag names that may be rendered instead of entity-escaped.
@@ -47,7 +47,7 @@ pub struct DmMarkdownProps {
 pub struct DmMarkdownOptions {
     /// Whether safe raw HTML is passed through to the rendered output.
     pub allow_html: bool,
-    /// Optional directory URL used to resolve relative link and image destinations.
+    /// Optional directory URL used to resolve relative Markdown and raw HTML URLs.
     pub base_url: Option<String>,
     /// Custom element tag names that may be rendered instead of entity-escaped.
     pub custom_elements: Vec<String>,
@@ -109,8 +109,8 @@ pub fn render_markdown_to_html_with_options(markdown: &str, options: DmMarkdownO
         .as_ref()
         .map_or(markdown, |front_matter| front_matter.body);
 
-    let parser =
-        Parser::new_ext(body, markdown_options()).map(|event| sanitize_event(event, &options));
+    let parser = coalesce_html_blocks(Parser::new_ext(body, markdown_options()))
+        .map(|event| sanitize_event(event, &options));
     let parser = transform_inline_colors(parser, options.color_chips);
     let parser = render_special_blocks(parser);
     let mut output = String::new();
@@ -357,6 +357,34 @@ fn render_color_chip(value: &str) -> String {
     )
 }
 
+fn coalesce_html_blocks<'a, I>(events: I) -> impl Iterator<Item = Event<'a>>
+where
+    I: IntoIterator<Item = Event<'a>>,
+{
+    let mut events = events.into_iter().peekable();
+
+    std::iter::from_fn(move || {
+        let event = events.next()?;
+        let Event::Html(first) = event else {
+            return Some(event);
+        };
+
+        if !matches!(events.peek(), Some(Event::Html(_))) {
+            return Some(Event::Html(first));
+        }
+
+        let mut html = first.into_string();
+        while matches!(events.peek(), Some(Event::Html(_))) {
+            let Some(Event::Html(next)) = events.next() else {
+                unreachable!("peeked HTML event must still be present");
+            };
+            html.push_str(&next);
+        }
+
+        Some(Event::Html(CowStr::Boxed(html.into_boxed_str())))
+    })
+}
+
 fn sanitize_event<'a>(event: Event<'a>, options: &DmMarkdownOptions) -> Event<'a> {
     match event {
         Event::Html(html) => sanitize_html_event(html, false, options),
@@ -403,6 +431,12 @@ fn sanitize_html_event<'a>(
     let html = escape_disabled_html_tags(&html, options)
         .map(|sanitized| CowStr::Boxed(sanitized.into_boxed_str()))
         .unwrap_or(html);
+    let html = options
+        .base_url
+        .as_deref()
+        .and_then(|base_url| resolve_raw_html_urls(&html, base_url))
+        .map(|resolved| CowStr::Boxed(resolved.into_boxed_str()))
+        .unwrap_or(html);
 
     if inline {
         Event::InlineHtml(html)
@@ -413,6 +447,7 @@ fn sanitize_html_event<'a>(
 
 struct RawHtmlTag<'a> {
     name: Option<&'a str>,
+    attributes_start: usize,
     end: usize,
     closing: bool,
     self_closing: bool,
@@ -448,6 +483,8 @@ fn escape_disabled_html_tags(html: &str, options: &DmMarkdownOptions) -> Option<
             cursor = escape_end;
             search = escape_end;
             changed = true;
+        } else if !tag.closing && is_raw_text_html_tag(name) {
+            search = raw_text_html_tag_end(html, name, tag.end);
         } else {
             search = tag.end;
         }
@@ -468,6 +505,7 @@ fn parse_raw_html_tag(html: &str, start: usize) -> Option<RawHtmlTag<'_>> {
         let end = rest.find("-->").map(|index| start + 1 + index + 3)?;
         return Some(RawHtmlTag {
             name: None,
+            attributes_start: end,
             end,
             closing: false,
             self_closing: false,
@@ -476,9 +514,10 @@ fn parse_raw_html_tag(html: &str, start: usize) -> Option<RawHtmlTag<'_>> {
 
     let first = rest.chars().next()?;
     if matches!(first, '!' | '?') {
-        let end = find_html_tag_end(html, start + 1)?;
+        let end = find_quoted_html_tag_end(html, start + 1)?;
         return Some(RawHtmlTag {
             name: None,
+            attributes_start: end,
             end,
             closing: false,
             self_closing: false,
@@ -510,13 +549,185 @@ fn parse_raw_html_tag(html: &str, start: usize) -> Option<RawHtmlTag<'_>> {
 
     Some(RawHtmlTag {
         name: Some(&html[name_start..name_end]),
+        attributes_start: name_end,
         end,
         closing,
         self_closing,
     })
 }
 
+fn resolve_raw_html_urls(html: &str, base_url: &str) -> Option<String> {
+    let mut output = String::new();
+    let mut output_cursor = 0;
+    let mut search = 0;
+    let mut changed = false;
+
+    while let Some(relative_start) = html[search..].find('<') {
+        let start = search + relative_start;
+        let Some(tag) = parse_raw_html_tag(html, start) else {
+            search = start + 1;
+            continue;
+        };
+        let Some(tag_name) = tag.name else {
+            search = tag.end;
+            continue;
+        };
+        if tag.closing {
+            search = tag.end;
+            continue;
+        }
+
+        let mut cursor = tag.attributes_start;
+        while cursor < tag.end {
+            cursor = skip_ascii_whitespace(html, cursor, tag.end);
+            let Some(ch) = html[cursor..tag.end].chars().next() else {
+                break;
+            };
+            if matches!(ch, '>' | '/') {
+                break;
+            }
+
+            let name_start = cursor;
+            while let Some(ch) = html[cursor..tag.end].chars().next() {
+                if ch.is_ascii_whitespace() || matches!(ch, '=' | '>' | '/') {
+                    break;
+                }
+                cursor += ch.len_utf8();
+            }
+            let name_end = cursor;
+
+            if name_start == name_end {
+                cursor += ch.len_utf8();
+                continue;
+            }
+
+            cursor = skip_ascii_whitespace(html, cursor, tag.end);
+            if html.as_bytes().get(cursor) != Some(&b'=') {
+                continue;
+            }
+
+            cursor += 1;
+            cursor = skip_ascii_whitespace(html, cursor, tag.end);
+
+            let value_with_quotes_start = cursor;
+            let quote = html[cursor..tag.end]
+                .chars()
+                .next()
+                .filter(|ch| matches!(ch, '\'' | '"'));
+            if quote.is_some() {
+                cursor += 1;
+            }
+
+            let value_start = cursor;
+            if let Some(quote) = quote {
+                while let Some(ch) = html[cursor..tag.end].chars().next() {
+                    if ch == quote {
+                        break;
+                    }
+                    cursor += ch.len_utf8();
+                }
+            } else {
+                while let Some(ch) = html[cursor..tag.end].chars().next() {
+                    if ch.is_ascii_whitespace() || ch == '>' {
+                        break;
+                    }
+                    cursor += ch.len_utf8();
+                }
+            }
+            let value_end = cursor;
+            let value_with_quotes_end = if quote.is_some() && cursor < tag.end {
+                cursor + 1
+            } else {
+                cursor
+            };
+
+            let name = &html[name_start..name_end];
+            if name.eq_ignore_ascii_case("href") || name.eq_ignore_ascii_case("src") {
+                let decoded = htmlize::unescape_attribute(&html[value_start..value_end]);
+                let resolved = resolve_url(CowStr::Borrowed(&decoded), Some(base_url));
+                if resolved.as_ref() != decoded.as_ref() {
+                    output.push_str(&html[output_cursor..value_with_quotes_start]);
+                    push_raw_html_attribute_value(&mut output, &resolved);
+                    output_cursor = value_with_quotes_end;
+                    changed = true;
+                }
+            }
+
+            if quote.is_some() && cursor < tag.end {
+                cursor += 1;
+            }
+        }
+
+        search = if is_raw_text_html_tag(tag_name) {
+            raw_text_html_tag_end(html, tag_name, tag.end)
+        } else {
+            tag.end
+        };
+    }
+
+    if changed {
+        output.push_str(&html[output_cursor..]);
+        Some(output)
+    } else {
+        None
+    }
+}
+
+fn skip_ascii_whitespace(html: &str, mut cursor: usize, end: usize) -> usize {
+    while let Some(ch) = html[cursor..end].chars().next() {
+        if !ch.is_ascii_whitespace() {
+            break;
+        }
+        cursor += ch.len_utf8();
+    }
+    cursor
+}
+
+fn push_raw_html_attribute_value(output: &mut String, value: &str) {
+    output.push('"');
+    output.push_str(&escape_attribute(value));
+    output.push('"');
+}
+
 fn find_html_tag_end(html: &str, from: usize) -> Option<usize> {
+    enum State {
+        BetweenAttributes,
+        BeforeValue,
+        QuotedValue(char),
+        UnquotedValue,
+    }
+
+    let mut state = State::BetweenAttributes;
+
+    for (offset, ch) in html[from..].char_indices() {
+        match state {
+            State::QuotedValue(quote) if ch == quote => state = State::BetweenAttributes,
+            State::QuotedValue(_) => {}
+            State::BeforeValue if ch.is_ascii_whitespace() => {}
+            State::BeforeValue if matches!(ch, '"' | '\'') => state = State::QuotedValue(ch),
+            State::BeforeValue if ch == '>' => {
+                return Some(from + offset + ch.len_utf8());
+            }
+            State::BeforeValue => state = State::UnquotedValue,
+            State::UnquotedValue if ch == '>' => {
+                return Some(from + offset + ch.len_utf8());
+            }
+            State::UnquotedValue if ch.is_ascii_whitespace() => {
+                state = State::BetweenAttributes;
+            }
+            State::UnquotedValue => {}
+            State::BetweenAttributes if ch == '=' => state = State::BeforeValue,
+            State::BetweenAttributes if ch == '>' => {
+                return Some(from + offset + ch.len_utf8());
+            }
+            State::BetweenAttributes => {}
+        }
+    }
+
+    None
+}
+
+fn find_quoted_html_tag_end(html: &str, from: usize) -> Option<usize> {
     let mut quote = None;
 
     for (offset, ch) in html[from..].char_indices() {
@@ -554,6 +765,21 @@ fn find_closing_html_tag_end(html: &str, tag_name: &str, from: usize) -> Option<
     }
 
     None
+}
+
+fn is_raw_text_html_tag(tag: &str) -> bool {
+    matches!(
+        tag.to_ascii_lowercase().as_str(),
+        "iframe" | "noembed" | "noframes" | "plaintext" | "textarea" | "title" | "xmp"
+    )
+}
+
+fn raw_text_html_tag_end(html: &str, tag_name: &str, from: usize) -> usize {
+    if tag_name.eq_ignore_ascii_case("plaintext") {
+        html.len()
+    } else {
+        find_closing_html_tag_end(html, tag_name, from).unwrap_or(html.len())
+    }
 }
 
 fn is_unsafe_html_tag(tag: &str) -> bool {
@@ -5631,6 +5857,172 @@ mod tests {
         );
 
         assert!(html.contains(r#"href="mailto:team@example.com""#));
+    }
+
+    #[test]
+    fn resolves_relative_urls_in_inline_and_block_raw_html() {
+        let markdown = concat!(
+            r#"Inline <a title="1 > 0" HREF = './guide.html' data-href="keep.md">Guide</a>."#,
+            "\n\n[Markdown](docs/readme.md)\n\n",
+            "<div>\n",
+            "<img alt='Cover'\n SRC=images/cover.png data-src=preview.png srcset='small.png 1x'>\n",
+            r#"<a href="../index.html" src='extras/icon.svg'>Index</a>"#,
+            "\n<a href='./meta.json?x=1&amp;y=2'>Metadata</a>",
+            "\n</div>",
+        );
+        let html = render_markdown_to_html_with_options(
+            markdown,
+            DmMarkdownOptions {
+                base_url: Some("/api/notes/42/attachments/".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert!(html.contains(r#"title="1 > 0""#));
+        assert!(html.contains(r#"HREF = "/api/notes/42/attachments/guide.html""#));
+        assert!(html.contains(r#"data-href="keep.md""#));
+        assert!(html.contains(r#"href="/api/notes/42/attachments/docs/readme.md""#));
+        assert!(html.contains(r#"SRC="/api/notes/42/attachments/images/cover.png""#));
+        assert!(html.contains("data-src=preview.png"));
+        assert!(html.contains(r#"srcset='small.png 1x'"#));
+        assert!(html.contains(r#"href="/api/notes/42/index.html""#));
+        assert!(html.contains(r#"src="/api/notes/42/attachments/extras/icon.svg""#));
+        assert!(html.contains(r#"href="/api/notes/42/attachments/meta.json?x=1&amp;y=2""#));
+    }
+
+    #[test]
+    fn preserves_special_raw_html_urls_and_rejects_unsafe_ones() {
+        let html = render_markdown_to_html_with_options(
+            concat!(
+                r#"<a href="https://example.com/a">absolute</a>"#,
+                r#"<a href="http://example.com/b">http</a>"#,
+                r#"<a href='#section'>fragment</a>"#,
+                "<a href=?view=raw>query</a>",
+                "<a href=mailto:team@example.com>mail</a>",
+                r#"<img src="/images/logo.png">"#,
+                r#"<a href="//cdn.example.com/a">cdn</a>"#,
+                r#"<a href="java&#x73;cript:alert(1)">unsafe link</a>"#,
+                r#"<a href="javascript&#58;alert(1)">encoded colon</a>"#,
+                "<img src=data&#58;text/html,unsafe>",
+            ),
+            DmMarkdownOptions {
+                base_url: Some("/api/notes/42/attachments/".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        for destination in [
+            "https://example.com/a",
+            "http://example.com/b",
+            "#section",
+            "?view=raw",
+            "mailto:team@example.com",
+            "/images/logo.png",
+            "//cdn.example.com/a",
+        ] {
+            assert!(html.contains(destination));
+        }
+        assert!(html.contains(r#"href="""#));
+        assert!(html.contains(r#"src="""#));
+        assert!(!html.to_ascii_lowercase().contains("javascript:"));
+        assert!(!html.contains("data:text/html"));
+    }
+
+    #[test]
+    fn rejects_unsafe_unquoted_raw_html_urls_with_stray_quotes() {
+        let html = render_markdown_to_html_with_options(
+            "<div>\n<a href=javascript:alert(1)//\" data-label=bad>bad</a>\n</div>",
+            DmMarkdownOptions {
+                base_url: Some("/api/notes/42/attachments/".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert!(html.contains(r#"href="" data-label=bad"#));
+        assert!(!html.contains("javascript:"));
+    }
+
+    #[test]
+    fn decodes_unterminated_numeric_entities_before_checking_url_safety() {
+        let html = render_markdown_to_html_with_options(
+            r#"<a href="javascript&#58alert(1)">bad</a>"#,
+            DmMarkdownOptions {
+                base_url: Some("./".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert!(html.contains(r#"href="""#));
+        assert!(!html.contains("javascript"));
+        assert!(!html.contains("&#58"));
+    }
+
+    #[test]
+    fn escapes_entities_from_a_raw_html_base_url() {
+        let html = render_markdown_to_html_with_options(
+            r#"<a href="guide.html">Guide</a>"#,
+            DmMarkdownOptions {
+                base_url: Some("javascript&colon;".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert!(html.contains(r#"href="javascript&amp;colon;/guide.html""#));
+        assert!(!html.contains(r#"href="javascript&colon;"#));
+    }
+
+    #[test]
+    fn does_not_resolve_raw_html_when_html_is_disabled() {
+        let html = render_markdown_to_html_with_options(
+            "<a\n href=guide.html>Guide</a>",
+            DmMarkdownOptions {
+                allow_html: false,
+                base_url: Some("/api/notes/42/attachments/".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert!(!html.contains("<a"));
+        assert!(!html.contains("/api/notes/42/attachments/guide.html"));
+        assert!(html.contains("guide.html"));
+    }
+
+    #[test]
+    fn only_resolves_urls_in_allowed_raw_html_tags() {
+        let markdown = concat!(
+            "<script\n src=worker.js>\nalert(1)\n</script>\n\n",
+            "<blocked-widget href=page.html>blocked</blocked-widget>\n\n",
+            "<enabled-widget href=page.html>enabled</enabled-widget>",
+        );
+        let html = render_markdown_to_html_with_options(
+            markdown,
+            DmMarkdownOptions {
+                base_url: Some("/api/notes/42/attachments/".to_owned()),
+                custom_elements: vec!["enabled-widget".to_owned()],
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert!(html.contains("&lt;script"));
+        assert!(html.contains("&lt;blocked-widget"));
+        assert!(!html.contains("/api/notes/42/attachments/worker.js"));
+        assert!(html.contains(
+            r#"<enabled-widget href="/api/notes/42/attachments/page.html">enabled</enabled-widget>"#
+        ));
+    }
+
+    #[test]
+    fn does_not_resolve_markup_inside_raw_text_elements() {
+        let html = render_markdown_to_html_with_options(
+            "<textarea>\n<a href=./inside.html>literal</a>\n</textarea>",
+            DmMarkdownOptions {
+                base_url: Some("/api/notes/42/attachments/".to_owned()),
+                ..DmMarkdownOptions::default()
+            },
+        );
+
+        assert!(html.contains("href=./inside.html"));
+        assert!(!html.contains("/api/notes/42/attachments/inside.html"));
     }
 
     #[test]
