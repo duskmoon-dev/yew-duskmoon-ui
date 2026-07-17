@@ -77,7 +77,7 @@ html! {
 }
 ```
 
-Relative Markdown link and image destinations are preserved by default. Set `base_url` to resolve them against a directory URL; absolute, external, fragment, and query-only destinations remain unchanged.
+Relative Markdown link and image destinations are preserved by default. Set `base_url` to resolve them, plus `href` and `src` attributes in allowed raw HTML, against a directory URL; absolute, external, fragment, and query-only destinations remain unchanged.
 
 For direct string rendering, configure the same behavior with `DmMarkdownOptions` and `render_markdown_to_html_with_options`. `FrontMatterMode::Hidden` removes initial front matter while keeping the body, and `FrontMatterMode::Disabled` parses the complete source as ordinary Markdown.
 
