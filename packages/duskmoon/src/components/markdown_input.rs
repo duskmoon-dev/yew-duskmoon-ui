@@ -25,6 +25,8 @@ pub struct MarkdownInputProps {
     pub on_change: Callback<AttrValue>,
     #[prop_or_default]
     pub readonly: bool,
+    #[prop_or_default]
+    pub auto_size: bool,
     #[prop_or(true)]
     pub preview: bool,
     #[prop_or_default]
@@ -96,7 +98,7 @@ pub fn markdown_input(props: &MarkdownInputProps) -> Html {
 
             if is_write {
                 <textarea
-                    class="markdown-input-field"
+                    class={field_classes(props.auto_size)}
                     value={current_value.clone()}
                     placeholder={props.placeholder.clone()}
                     readonly={props.readonly}
@@ -107,5 +109,23 @@ pub fn markdown_input(props: &MarkdownInputProps) -> Html {
                 <DmMarkdown class="markdown-input-preview" markdown={current_value} />
             }
         </div>
+    }
+}
+
+fn field_classes(auto_size: bool) -> Classes {
+    classes!(
+        "markdown-input-field",
+        auto_size.then_some("textarea-auto-resize"),
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::field_classes;
+
+    #[test]
+    fn adds_auto_resize_class_only_when_enabled() {
+        assert!(!field_classes(false).contains("textarea-auto-resize"));
+        assert!(field_classes(true).contains("textarea-auto-resize"));
     }
 }

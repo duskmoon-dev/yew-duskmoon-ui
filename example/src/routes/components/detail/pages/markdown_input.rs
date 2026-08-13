@@ -42,6 +42,12 @@ const MARKDOWN_INPUT_API: &[ApiRow] = &[
         docs: "Prevents source edits while preserving preview access.",
     },
     ApiRow {
+        prop: "auto_size",
+        ty: "bool",
+        default: "false",
+        docs: "Applies field-sizing: content to the source textarea through the auto-resize class.",
+    },
+    ApiRow {
         prop: "preview",
         ty: "bool",
         default: "true",
@@ -75,12 +81,13 @@ pub fn page(spec: &'static ComponentSpec) -> ComponentPage {
 }
 
 fn usage(_: &ComponentSpec) -> String {
-    "use yew_duskmoon::MarkdownInput;\n\nhtml! {\n    <MarkdownInput\n        variant={Some(\"primary\".to_owned())}\n        default_value={\"# Release note\\n\\n- Write markdown\\n- Preview rendered output\"}\n        placeholder={\"Write markdown...\"}\n    />\n}".to_owned()
+    "use yew_duskmoon::MarkdownInput;\n\nhtml! {\n    <MarkdownInput\n        auto_size={true}\n        variant={Some(\"primary\".to_owned())}\n        default_value={\"# Release note\\n\\n- Write markdown\\n- Preview rendered output\"}\n        placeholder={\"Write markdown...\"}\n    />\n}".to_owned()
 }
 
 fn demo(_: &ComponentSpec) -> Html {
     html! {
         <MarkdownInput
+            auto_size={true}
             variant={primary_variant()}
             default_value={SAMPLE_MARKDOWN}
             placeholder="Write markdown..."

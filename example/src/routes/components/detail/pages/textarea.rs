@@ -9,13 +9,19 @@ const TEXTAREA_API: &[ApiRow] = &[
         prop: "class",
         ty: "Classes",
         default: "empty",
-        docs: "Extra classes appended to the Textarea wrapper.",
+        docs: "Extra classes appended to the textarea element.",
     },
     ApiRow {
         prop: "children",
         ty: "Children",
         default: "empty",
-        docs: "Textarea-like content rendered inside the wrapper.",
+        docs: "Initial text rendered inside the textarea.",
+    },
+    ApiRow {
+        prop: "auto_size",
+        ty: "bool",
+        default: "false",
+        docs: "Applies field-sizing: content through the textarea auto-resize class.",
     },
     ApiRow {
         prop: "variant",
@@ -30,14 +36,14 @@ pub fn page(spec: &'static ComponentSpec) -> ComponentPage {
 }
 
 fn usage(_: &ComponentSpec) -> String {
-    "use yew_duskmoon::Textarea;\n\nhtml! {\n    <div class=\"textarea-container\">\n        <label class=\"textarea-label\">{ \"Release notes\" }</label>\n        <Textarea variant={Some(\"primary\".to_owned())} class=\"textarea-outlined textarea-resize-none\">\n            { \"Summarize the user-visible changes...\" }\n        </Textarea>\n        <span class=\"textarea-helper\">{ \"Keep the note short and specific.\" }</span>\n    </div>\n}".to_owned()
+    "use yew_duskmoon::Textarea;\n\nhtml! {\n    <div class=\"textarea-container\">\n        <label class=\"textarea-label\">{ \"Release notes\" }</label>\n        <Textarea auto_size={true} variant={Some(\"primary\".to_owned())} class=\"textarea-outlined\">\n            { \"Summarize the user-visible changes...\" }\n        </Textarea>\n        <span class=\"textarea-helper\">{ \"Keep the note short and specific.\" }</span>\n    </div>\n}".to_owned()
 }
 
 fn demo(_: &ComponentSpec) -> Html {
     html! {
         <div class="textarea-container">
             <label class="textarea-label">{ "Release notes" }</label>
-            <Textarea variant={primary_variant()} class="textarea-outlined textarea-resize-none">
+            <Textarea auto_size={true} variant={primary_variant()} class="textarea-outlined">
                 { "Improved deployment status messages and added audit links." }
             </Textarea>
             <span class="textarea-helper">{ "Keep the note short and specific." }</span>
