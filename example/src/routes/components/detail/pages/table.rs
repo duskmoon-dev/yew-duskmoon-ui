@@ -47,7 +47,7 @@ const TABLE_API: &[ApiRow] = &[
         prop: "sticky_header",
         ty: "bool",
         default: "false",
-        docs: "Emits table-sticky for a consumer-provided vertical scroll container; core issue #56 tracks current Chromium behavior.",
+        docs: "Emits table-sticky for a consumer-provided vertical scroll container. Use @duskmoon-dev/core 1.18.6 or later for the corrected sticky-header behavior.",
     },
     ApiRow {
         prop: "selectable",
@@ -105,7 +105,7 @@ fn demo(_: &ComponentSpec) -> Html {
     html! {
         <div class="component-detail-data-management">
             <p id="managed-records-help" class="component-detail-table-help">
-                { "A generic composition of reusable badges, semantic table markup, and native tooltip actions. Scroll the records to exercise the sticky-header contract; core issue #56 tracks current Chromium behavior." }
+                { "A generic composition of reusable badges, semantic table markup, and native tooltip actions. Scroll the records to exercise the sticky-header contract." }
             </p>
             <Table
                 class="component-detail-table-demo"

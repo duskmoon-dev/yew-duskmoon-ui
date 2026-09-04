@@ -179,7 +179,7 @@ html! {
 
 Each `Tooltip` is a sibling surface with a required stable `id`. Setting a `Button` or `IconButton` `tooltip_id` to that same value supplies `interestfor`, `aria-describedby`, and the matching CSS anchor without cloning the trigger. Keep visible text or an independent `aria_label`/`label` as the trigger's accessible name; `title` is a useful fallback. Placements are `Top`, `Bottom`, `Left`, and `Right`; content forms are `Plain`, `Multiline`, and `Rich`; tones are `Dark` and `Light`, with `Color` available for palette variants. A legacy `variant` wins over `color`, which wins over `tone`. Native display relies on the Popover API, `interestfor`, and CSS Anchor Positioning, so tooltip behavior is progressive enhancement on browsers without those features.
 
-Two visual details remain Duskmoon core follow-ups: native tooltip scrollbar suppression in [duskmoonui#55](https://github.com/duskmoon-dev/duskmoonui/issues/55) and sticky table-header behavior in Chromium in [duskmoonui#56](https://github.com/duskmoon-dev/duskmoonui/issues/56). This Yew wrapper emits the supported contracts without local CSS overrides.
+Native tooltip overflow and sticky table-header fixes are available in `@duskmoon-dev/core` 1.18.6 and later. This Yew wrapper emits those contracts without local CSS overrides.
 
 ## Migration notes
 

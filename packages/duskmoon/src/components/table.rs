@@ -99,8 +99,6 @@ fn table_classes(props: &TableProps) -> Classes {
         TableBorders::Borderless => classes.push("table-borderless"),
     }
     if props.sticky_header {
-        // TODO(upstream): duskmoon-dev/duskmoonui#56 - Core must keep the
-        // header visible inside a bounded overflow container in Chromium.
         classes.push("table-sticky");
     }
     if props.selectable {

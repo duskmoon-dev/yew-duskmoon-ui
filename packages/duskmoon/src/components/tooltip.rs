@@ -142,8 +142,6 @@ fn tooltip_classes(props: &TooltipProps) -> Classes {
 }
 
 fn tooltip_view(props: &TooltipProps) -> Html {
-    // TODO(upstream): duskmoon-dev/duskmoonui#55 - Core must suppress the
-    // native popover overflow scrollbar without adapter-local visual CSS.
     html! {
         <div
             id={props.id.clone()}
