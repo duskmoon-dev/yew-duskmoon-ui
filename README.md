@@ -181,12 +181,45 @@ Each `Tooltip` is a sibling surface with a required stable `id`. Setting a `Butt
 
 Native tooltip overflow and sticky table-header fixes are available in `@duskmoon-dev/core` 1.18.6 and later. This Yew wrapper emits those contracts without local CSS overrides.
 
+### Native popovers and dialogs
+
+`Popover` requires a stable `id` and renders a command trigger next to a native `popover` surface. The default `PopoverMode::Auto` provides light-dismiss; use `Manual` with an explicit `hide-popover` command when dismissal must be controlled. The component also emits matching CSS anchor styles, so no Yew visibility state or `popover-show` class is needed.
+
+`Dialog` renders a native `<dialog>` and requires an `id`. `Button` and `IconButton` accept `command` and `command_for`, which map to the HTML `command` and `commandfor` attributes:
+
+```rust
+use yew::prelude::*;
+use yew_duskmoon::{Button, Dialog, Popover};
+
+html! {
+    <>
+        <Popover id="account-menu" class="popover-bottom">
+            <div class="popover-body">{ "Account options" }</div>
+        </Popover>
+
+        <Button command="show-modal" command_for="confirm-delete">{ "Delete" }</Button>
+        <Dialog id="confirm-delete">
+            <div class="dialog-box">
+                <div class="dialog-body">{ "Delete this item?" }</div>
+                <div class="dialog-footer">
+                    <Button command="close" command_for="confirm-delete">{ "Cancel" }</Button>
+                </div>
+            </div>
+        </Dialog>
+    </>
+}
+```
+
+`Modal` remains as a legacy name but now implements the new native dialog contract. Migrating existing `Modal` calls is required; prefer `Dialog` in new code.
+
 ## Migration notes
 
 - `Badge` now renders a `<span>` instead of a `<div>`. Update selectors or layout assumptions that depended on the old root.
 - `Button` now defaults to native `type="button"`; set `native_type={NativeButtonType::Submit}` for form submission. `ButtonType::Link` now uses the supported `btn-text` class instead of the old unsupported `btn-link`. A disabled or loading link no longer emits `disabled` or `href`, is removed from normal keyboard activation, and exposes `aria-disabled`.
 - `Table` now renders a semantic `<table>`. Replace the old `<div>` row markup with `<caption>`, `<thead>`, `<tbody>`, `<tr>`, `<th>`, and `<td>` as appropriate. With `responsive={true}`, custom `class` stays on the table and `wrapper_class` customizes the `.table-responsive` wrapper.
 - `Tooltip` replaces the obsolete wrapper/`.tooltip-content`/`.tooltip-open` structure with a `popover="hint"` surface. Give it a stable `id` and associate a separate trigger through `tooltip_id`.
+- `Popover` no longer accepts `PopoverTrigger` or manages open state. Give it a stable `id`; the generated button uses `command="toggle-popover"`, and browser state is represented by `:popover-open`.
+- `Dialog` and the legacy `Modal` name now require an `id` and render a native `<dialog>`. This is a breaking markup migration: replace `.modal-open`, old `.modal-*` children, conditional overlay wrappers, and click-state handlers with the `.dialog-*` structure and `show-modal` / `close` commands.
 
 ## Components
 

@@ -90,7 +90,7 @@ pub fn home() -> Html {
               <Link<ComponentsRoute> to={ComponentsRoute::FeedbackComponent} classes="route-tile">
                 <span>{ "03" }</span>
                 <strong>{ "Feedback" }</strong>
-                <small>{ "Alerts, modal, toast" }</small>
+                <small>{ "Alerts, dialog, toast" }</small>
               </Link<ComponentsRoute>>
               <Link<ComponentsRoute> to={ComponentsRoute::DataDisplayComponent} classes="route-tile">
                 <span>{ "04" }</span>

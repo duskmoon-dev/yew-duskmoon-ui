@@ -117,7 +117,7 @@ pub mod pin_input;
 pub use pin_input::PinInput;
 
 pub mod popover;
-pub use popover::{Popover, PopoverTrigger};
+pub use popover::{Popover, PopoverCommand, PopoverMode};
 
 pub mod progress;
 pub use progress::Progress;

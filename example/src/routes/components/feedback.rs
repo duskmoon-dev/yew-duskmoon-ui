@@ -1,21 +1,11 @@
 use yew::prelude::*;
 use yew_duskmoon::typography::TypographyLevel;
-use yew_duskmoon::{Alert, Button, Card, Modal, Toast, Typography};
+use yew_duskmoon::{Alert, Button, Card, Dialog, Toast, Typography};
 
 use super::palette::{variant, PALETTE};
 
 #[function_component(FeedbackComponent)]
 pub fn feedback_component() -> Html {
-    let show_modal = use_state(|| false);
-    let open_modal = {
-        let show_modal = show_modal.clone();
-        Callback::from(move |_| show_modal.set(true))
-    };
-    let close_modal = {
-        let show_modal = show_modal.clone();
-        Callback::from(move |_| show_modal.set(false))
-    };
-
     let show_toast = use_state(|| false);
     let trigger_toast = {
         let show_toast = show_toast.clone();
@@ -59,13 +49,19 @@ pub fn feedback_component() -> Html {
                     </div>
                 </Card>
 
-                <Card title={html! { <Typography level={TypographyLevel::H4}>{"Modal Overlay"}</Typography> }} classes="component-card">
+                <Card title={html! { <Typography level={TypographyLevel::H4}>{"Native Dialog"}</Typography> }} classes="component-card">
                     <div class="flex flex-col gap-4 w-full">
                         <Typography level={TypographyLevel::Default}>
-                            {"Click the button below to toggle the modal overlay."}
+                            {"Open the modal dialog with a declarative HTML command."}
                         </Typography>
                         <div>
-                            <Button onclick={open_modal} variant={Some("primary".to_owned())}>{"Open Modal"}</Button>
+                            <Button
+                                command="show-modal"
+                                command_for="feedback-dialog"
+                                variant={Some("primary".to_owned())}
+                            >
+                                {"Open Dialog"}
+                            </Button>
                         </div>
                     </div>
                 </Card>
@@ -81,28 +77,27 @@ pub fn feedback_component() -> Html {
                     </div>
                 </Card>
 
-                // Modal Rendering
-                {
-                    if *show_modal {
-                        html! {
-                            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                                <Modal variant={Some("primary".to_owned())} class="demo-modal">
-                                    <div class="p-6">
-                                        <Typography level={TypographyLevel::H4} classes="mb-4">{"Interactive Modal"}</Typography>
-                                        <Typography level={TypographyLevel::Default} classes="mb-6">
-                                            {"This modal wrapper uses our custom Modal component and Yew state to control overlay visibility."}
-                                        </Typography>
-                                        <div class="flex justify-end gap-2">
-                                            <Button onclick={close_modal} variant={Some("tertiary".to_owned())}>{"Close Dialog"}</Button>
-                                        </div>
-                                    </div>
-                                </Modal>
-                            </div>
-                        }
-                    } else {
-                        html! {}
-                    }
-                }
+                <Dialog id="feedback-dialog">
+                    <div class="dialog-box">
+                        <div class="dialog-header">
+                            <Typography level={TypographyLevel::H4} classes="dialog-title">{"Interactive Dialog"}</Typography>
+                        </div>
+                        <div class="dialog-body">
+                            <Typography level={TypographyLevel::Default}>
+                                {"The native dialog owns the backdrop, focus handling, Escape key, and top-layer visibility."}
+                            </Typography>
+                        </div>
+                        <div class="dialog-footer">
+                            <Button
+                                command="close"
+                                command_for="feedback-dialog"
+                                variant={Some("tertiary".to_owned())}
+                            >
+                                {"Close Dialog"}
+                            </Button>
+                        </div>
+                    </div>
+                </Dialog>
 
                 // Toast Rendering
                 {

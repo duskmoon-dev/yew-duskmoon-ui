@@ -2047,16 +2047,6 @@ textarea {
     color: var(--component-color);
 }
 
-.demo-modal {
-    position: relative;
-    width: min(100% - 32px, 460px);
-    overflow: hidden;
-    border: 1px solid var(--dm-line-strong);
-    border-radius: 8px;
-    background: var(--color-surface);
-    box-shadow: var(--dm-shadow);
-}
-
 .color-list {
     display: grid;
     gap: 8px;

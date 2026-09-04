@@ -12,12 +12,12 @@ fn usage(_: &ComponentSpec) -> String {
     r#"use yew_duskmoon::Cascader;
 
 html! {
-    <Cascader variant={Some("primary".to_owned())} class="cascader-open">
-        <button class="cascader-trigger" type="button">
+    <Cascader variant={Some("primary".to_owned())}>
+        <button class="cascader-trigger" type="button" command="toggle-popover" commandfor="location-cascader">
             <span class="cascader-placeholder">{ "Select location" }</span>
             <span class="cascader-arrow">{ ">" }</span>
         </button>
-        <div class="cascader-dropdown">
+        <div class="cascader-dropdown" id="location-cascader" popover="auto">
             <div class="cascader-panels">
                 <div class="cascader-panel">
                     <button class="cascader-option cascader-option-active" type="button">
@@ -33,12 +33,12 @@ html! {
 
 fn demo(_: &ComponentSpec) -> Html {
     html! {
-        <Cascader variant={Some("primary".to_owned())} class="component-detail-demo-control cascader-open">
-            <button class="cascader-trigger" type="button">
+        <Cascader variant={Some("primary".to_owned())} class="component-detail-demo-control">
+            <button class="cascader-trigger" type="button" command="toggle-popover" commandfor="demo-cascader">
                 <span class="cascader-value">{ "United States / California / San Francisco" }</span>
                 <span class="cascader-arrow">{ ">" }</span>
             </button>
-            <div class="cascader-dropdown">
+            <div class="cascader-dropdown" id="demo-cascader" popover="auto">
                 <div class="cascader-panels">
                     <div class="cascader-panel">
                         <div class="cascader-panel-header">{ "Country" }</div>
@@ -84,12 +84,21 @@ fn demo(_: &ComponentSpec) -> Html {
 }
 
 fn color_variant(color: PaletteColor) -> Html {
+    let id: AttrValue = format!("cascader-color-{}", color.key).into();
+
     html! {
         <Cascader variant={variant(color)} class="component-detail-color-demo">
-            <button class="cascader-trigger" type="button">
+            <button class="cascader-trigger" type="button" command="toggle-popover" commandfor={id.clone()}>
                 <span class="cascader-value">{ color.label }</span>
                 <span class="cascader-arrow">{ ">" }</span>
             </button>
+            <div class="cascader-dropdown" id={id} popover="auto">
+                <div class="cascader-panels">
+                    <div class="cascader-panel">
+                        <button class="cascader-option" type="button">{ color.label }</button>
+                    </div>
+                </div>
+            </div>
         </Cascader>
     }
 }

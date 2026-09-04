@@ -30,19 +30,34 @@ pub fn page(spec: &'static ComponentSpec) -> ComponentPage {
 }
 
 fn usage(_: &ComponentSpec) -> String {
-    "use yew_duskmoon::TreeSelect;\n\nhtml! {\n    <TreeSelect variant={Some(\"primary\".to_owned())}>\n        <div class=\"tree-select-trigger\" role=\"combobox\" tabindex=\"0\">\n            <span class=\"tree-select-value tree-select-value-selected\">\n                <span class=\"tree-select-path\">{ \"Engineering / Platform\" }</span>\n            </span>\n            <span class=\"tree-select-arrow\">{ \"v\" }</span>\n        </div>\n    </TreeSelect>\n}".to_owned()
+    r#"use yew_duskmoon::TreeSelect;
+
+html! {
+    <TreeSelect variant={Some("primary".to_owned())}>
+        <button class="tree-select-trigger" type="button" command="toggle-popover" commandfor="team-tree">
+            <span class="tree-select-value tree-select-value-selected">
+                <span class="tree-select-path">{ "Engineering / Platform" }</span>
+            </span>
+            <span class="tree-select-arrow">{ "v" }</span>
+        </button>
+        <div class="tree-select-dropdown" id="team-tree" popover="auto">
+            <div class="tree-select-options">{ "Tree nodes..." }</div>
+        </div>
+    </TreeSelect>
+}"#
+        .to_owned()
 }
 
 fn demo(_: &ComponentSpec) -> Html {
     html! {
-        <TreeSelect variant={primary_variant()} class="tree-select-open tree-select-outlined">
-            <div class="tree-select-trigger" role="combobox" aria-expanded="true" tabindex="0">
+        <TreeSelect variant={primary_variant()} class="tree-select-outlined">
+            <button class="tree-select-trigger" type="button" command="toggle-popover" commandfor="demo-tree-select">
                 <span class="tree-select-value tree-select-value-selected">
                     <span class="tree-select-path">{ "Engineering / Platform" }</span>
                 </span>
                 <span class="tree-select-arrow">{ "v" }</span>
-            </div>
-            <div class="tree-select-dropdown">
+            </button>
+            <div class="tree-select-dropdown" id="demo-tree-select" popover="auto">
                 <div class="tree-select-search">
                     <input type="text" class="tree-select-search-input" placeholder="Search..." />
                 </div>
@@ -66,13 +81,22 @@ fn demo(_: &ComponentSpec) -> Html {
 }
 
 fn color_variant(color: PaletteColor) -> Html {
+    let id: AttrValue = format!("tree-select-color-{}", color.key).into();
+
     html! {
         <TreeSelect variant={variant(color)}>
-            <div class="tree-select-trigger" style="color: var(--component-color);" role="combobox" tabindex="0">
+            <button class="tree-select-trigger" style="color: var(--component-color);" type="button" command="toggle-popover" commandfor={id.clone()}>
                 <span class="tree-select-value tree-select-value-selected">
                     <span class="tree-select-path">{ color.label }</span>
                 </span>
                 <span class="tree-select-arrow">{ "v" }</span>
+            </button>
+            <div class="tree-select-dropdown" id={id} popover="auto">
+                <div class="tree-select-options">
+                    <div class="tree-select-node tree-select-node-leaf">
+                        <span class="tree-select-node-label">{ color.label }</span>
+                    </div>
+                </div>
             </div>
         </TreeSelect>
     }

@@ -15,9 +15,9 @@ html! {
     <DatePicker variant={Some("primary".to_owned())}>
         <div class="datepicker-input-container">
             <input class="datepicker-input" type="date" />
-            <button class="datepicker-trigger" type="button"><span class="datepicker-icon"></span></button>
+            <button class="datepicker-trigger" type="button" command="toggle-popover" commandfor="date-calendar"><span class="datepicker-icon"></span></button>
         </div>
-        <div class="datepicker-dropdown datepicker-inline">
+        <div class="datepicker-dropdown" id="date-calendar" popover="auto">
             <div class="datepicker-header">
                 <button class="datepicker-nav-btn" type="button">{ "<" }</button>
                 <div class="datepicker-title">{ "January 2026" }</div>
@@ -31,14 +31,14 @@ html! {
 
 fn demo(_: &ComponentSpec) -> Html {
     html! {
-        <Datepicker variant={Some("primary".to_owned())} class="component-detail-demo-control datepicker-inline">
+        <Datepicker variant={Some("primary".to_owned())} class="component-detail-demo-control">
             <div class="datepicker-input-container">
                 <input class="datepicker-input" type="date" value="2026-07-07" readonly={true} />
-                <button class="datepicker-trigger" type="button" aria-label="Open calendar">
+                <button class="datepicker-trigger" type="button" aria-label="Open calendar" command="toggle-popover" commandfor="demo-datepicker">
                     <span class="datepicker-icon"></span>
                 </button>
             </div>
-            <div class="datepicker-dropdown datepicker-inline">
+            <div class="datepicker-dropdown" id="demo-datepicker" popover="auto">
                 <div class="datepicker-header">
                     <button class="datepicker-nav-btn" type="button">{ "<" }</button>
                     <div class="datepicker-title">{ "July 2026" }</div>
@@ -68,14 +68,21 @@ fn demo(_: &ComponentSpec) -> Html {
 }
 
 fn color_variant(color: PaletteColor) -> Html {
+    let id: AttrValue = format!("datepicker-color-{}", color.key).into();
+
     html! {
         <Datepicker variant={variant(color)} class="component-detail-color-demo">
             <label class="form-label">{ color.label }</label>
             <div class="datepicker-input-container">
                 <input class="datepicker-input" type="text" placeholder={format!("{} date", color.label)} />
-                <button class="datepicker-trigger" type="button" aria-label="Open calendar">
+                <button class="datepicker-trigger" type="button" aria-label="Open calendar" command="toggle-popover" commandfor={id.clone()}>
                     <span class="datepicker-icon"></span>
                 </button>
+            </div>
+            <div class="datepicker-dropdown" id={id} popover="auto">
+                <div class="datepicker-header">
+                    <div class="datepicker-title">{ format!("{} calendar", color.label) }</div>
+                </div>
             </div>
             <code>{ format!("datepicker-{}", color.key) }</code>
         </Datepicker>

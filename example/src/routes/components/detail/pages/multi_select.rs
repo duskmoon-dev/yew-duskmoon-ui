@@ -12,15 +12,15 @@ fn usage(_: &ComponentSpec) -> String {
     r#"use yew_duskmoon::MultiSelect;
 
 html! {
-    <MultiSelect variant={Some("primary".to_owned())} class="multi-select-open">
-        <button class="multi-select-trigger" type="button">
+    <MultiSelect variant={Some("primary".to_owned())}>
+        <button class="multi-select-trigger" type="button" command="toggle-popover" commandfor="framework-select">
             <div class="multi-select-tags">
                 <span class="multi-select-tag">{ "React" }</span>
                 <span class="multi-select-tag">{ "Yew" }</span>
             </div>
             <span class="multi-select-arrow">{ "v" }</span>
         </button>
-        <div class="multi-select-dropdown">
+        <div class="multi-select-dropdown" id="framework-select" popover="auto">
             <div class="multi-select-options">
                 <button class="multi-select-option multi-select-option-selected" type="button">{ "React" }</button>
                 <button class="multi-select-option" type="button">{ "Svelte" }</button>
@@ -33,8 +33,8 @@ html! {
 
 fn demo(_: &ComponentSpec) -> Html {
     html! {
-        <MultiSelect variant={Some("primary".to_owned())} class="component-detail-demo-control multi-select-open">
-            <button class="multi-select-trigger" type="button">
+        <MultiSelect variant={Some("primary".to_owned())} class="component-detail-demo-control">
+            <button class="multi-select-trigger" type="button" command="toggle-popover" commandfor="demo-multi-select">
                 <div class="multi-select-tags">
                     <span class="multi-select-tag">
                         <span class="multi-select-tag-text">{ "Yew" }</span>
@@ -48,7 +48,7 @@ fn demo(_: &ComponentSpec) -> Html {
                 </div>
                 <span class="multi-select-arrow">{ "v" }</span>
             </button>
-            <div class="multi-select-dropdown">
+            <div class="multi-select-dropdown" id="demo-multi-select" popover="auto">
                 <div class="multi-select-search">
                     <input class="multi-select-search-input" type="text" value="r" readonly={true} />
                 </div>
@@ -72,12 +72,19 @@ fn demo(_: &ComponentSpec) -> Html {
 }
 
 fn color_variant(color: PaletteColor) -> Html {
+    let id: AttrValue = format!("multi-select-color-{}", color.key).into();
+
     html! {
         <MultiSelect variant={variant(color)} class="component-detail-color-demo">
-            <button class="multi-select-trigger" type="button">
+            <button class="multi-select-trigger" type="button" command="toggle-popover" commandfor={id.clone()}>
                 <span class="multi-select-placeholder">{ color.label }</span>
                 <span class="multi-select-counter">{ "2" }</span>
             </button>
+            <div class="multi-select-dropdown" id={id} popover="auto">
+                <div class="multi-select-options">
+                    <button class="multi-select-option" type="button">{ color.label }</button>
+                </div>
+            </div>
         </MultiSelect>
     }
 }

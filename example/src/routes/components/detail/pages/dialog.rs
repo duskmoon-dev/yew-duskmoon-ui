@@ -1,69 +1,114 @@
 use crate::routes::components::catalog::ComponentSpec;
-use crate::routes::components::detail::page::{ApiRow, ComponentPage, primary_variant};
-use crate::routes::components::palette::{PaletteColor, variant};
+use crate::routes::components::detail::page::{ApiRow, ComponentPage};
 use yew::prelude::*;
-use yew_duskmoon::Dialog;
+use yew_duskmoon::{Button, Dialog, IconButton};
 
 const DIALOG_API: &[ApiRow] = &[
+    ApiRow {
+        prop: "id",
+        ty: "AttrValue",
+        default: "required",
+        docs: "Stable DOM id targeted by commandfor on show-modal and close buttons.",
+    },
     ApiRow {
         prop: "class",
         ty: "Classes",
         default: "empty",
-        docs: "Extra classes appended to the Dialog wrapper.",
+        docs: "Extra classes appended to the native dialog element.",
     },
     ApiRow {
         prop: "children",
         ty: "Children",
         default: "empty",
-        docs: "Dialog box, header, body, and footer markup rendered inside the wrapper.",
+        docs: "Dialog box, header, body, and footer markup rendered inside the native dialog.",
     },
     ApiRow {
         prop: "variant",
         ty: "Option<String>",
         default: "None",
-        docs: "Appends a dialog color class such as dialog-primary.",
+        docs: "Legacy escape hatch that appends a dialog-{variant} class.",
     },
 ];
 
 pub fn page(spec: &'static ComponentSpec) -> ComponentPage {
-    ComponentPage::new(spec, usage, DIALOG_API, demo, color_variant)
+    ComponentPage::without_color_variants(spec, usage, DIALOG_API, demo)
 }
 
 fn usage(_: &ComponentSpec) -> String {
-    "use yew_duskmoon::Dialog;\n\nhtml! {\n    <Dialog variant={Some(\"primary\".to_owned())} class=\"demo-modal dialog-divider\">\n        <div class=\"dialog-box\">\n            <div class=\"dialog-header\">\n                <h2 class=\"dialog-title\">{ \"Confirm deployment\" }</h2>\n                <button class=\"dialog-close\" type=\"button\" aria-label=\"Close\">{ \"x\" }</button>\n            </div>\n            <div class=\"dialog-body\">\n                <p>{ \"Deploy the selected revision to production?\" }</p>\n            </div>\n            <div class=\"dialog-footer\">\n                <button class=\"btn btn-ghost\" type=\"button\">{ \"Cancel\" }</button>\n                <button class=\"btn btn-primary\" type=\"button\">{ \"Deploy\" }</button>\n            </div>\n        </div>\n    </Dialog>\n}".to_owned()
-}
+    r#"use yew_duskmoon::{Button, Dialog, IconButton};
 
-fn demo(_: &ComponentSpec) -> Html {
-    html! {
-        <Dialog variant={primary_variant()} class="demo-modal dialog-divider">
+html! {
+    <>
+        <Button command="show-modal" command_for="confirm-deployment">
+            { "Open dialog" }
+        </Button>
+        <Dialog id="confirm-deployment" class="dialog-divider">
             <div class="dialog-box">
                 <div class="dialog-header">
                     <h2 class="dialog-title">{ "Confirm deployment" }</h2>
-                    <button class="dialog-close" type="button" aria-label="Close">{ "x" }</button>
+                    <IconButton
+                        label="Close dialog"
+                        class="dialog-close"
+                        command="close"
+                        command_for="confirm-deployment"
+                    >
+                        { "x" }
+                    </IconButton>
                 </div>
                 <div class="dialog-body">
                     <p>{ "Deploy the selected revision to production?" }</p>
                 </div>
                 <div class="dialog-footer">
-                    <button class="btn btn-ghost" type="button">{ "Cancel" }</button>
-                    <button class="btn btn-primary" type="button">{ "Deploy" }</button>
+                    <Button command="close" command_for="confirm-deployment">{ "Cancel" }</Button>
+                    <Button command="close" command_for="confirm-deployment">{ "Deploy" }</Button>
                 </div>
             </div>
         </Dialog>
-    }
+    </>
+}"#
+        .to_owned()
 }
 
-fn color_variant(color: PaletteColor) -> Html {
+fn demo(_: &ComponentSpec) -> Html {
     html! {
-        <Dialog variant={variant(color)} class="demo-modal">
-            <div class="dialog-box">
-                <div class="dialog-header">
-                    <h3 class="dialog-title" style="color: var(--component-color);">{ color.label }</h3>
+        <>
+            <Button command="show-modal" command_for="demo-dialog" variant={Some("primary".to_owned())}>
+                { "Open native dialog" }
+            </Button>
+            <Dialog id="demo-dialog" class="dialog-divider">
+                <div class="dialog-box">
+                    <div class="dialog-header">
+                        <h2 class="dialog-title">{ "Confirm deployment" }</h2>
+                        <IconButton
+                            label="Close dialog"
+                            class="dialog-close"
+                            command="close"
+                            command_for="demo-dialog"
+                        >
+                            { "x" }
+                        </IconButton>
+                    </div>
+                    <div class="dialog-body">
+                        <p>{ "The native dialog provides the modal top layer, backdrop, Escape handling, and focus restoration." }</p>
+                    </div>
+                    <div class="dialog-footer">
+                        <Button
+                            appearance={Some(yew_duskmoon::ButtonAppearance::Text)}
+                            command="close"
+                            command_for="demo-dialog"
+                        >
+                            { "Cancel" }
+                        </Button>
+                        <Button
+                            variant={Some("primary".to_owned())}
+                            command="close"
+                            command_for="demo-dialog"
+                        >
+                            { "Deploy" }
+                        </Button>
+                    </div>
                 </div>
-                <div class="dialog-body">
-                    <p>{ format!("dialog-{}", color.key) }</p>
-                </div>
-            </div>
-        </Dialog>
+            </Dialog>
+        </>
     }
 }

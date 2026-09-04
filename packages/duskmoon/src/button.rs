@@ -138,6 +138,13 @@ pub struct ButtonProps {
     /// surface and supplies the required CSS anchor on this trigger.
     #[prop_or_default]
     pub tooltip_id: Option<AttrValue>,
+    /// Native HTML invoker command such as `show-modal` or `hide-popover`.
+    /// This is emitted only when the component renders a `<button>`.
+    #[prop_or_default]
+    pub command: Option<AttrValue>,
+    /// DOM id targeted by `command`.
+    #[prop_or_default]
+    pub command_for: Option<AttrValue>,
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
@@ -185,6 +192,12 @@ pub struct IconButtonProps {
     /// surface and supplies the required CSS anchor on this trigger.
     #[prop_or_default]
     pub tooltip_id: Option<AttrValue>,
+    /// Native HTML invoker command such as `show-modal` or `hide-popover`.
+    #[prop_or_default]
+    pub command: Option<AttrValue>,
+    /// DOM id targeted by `command`.
+    #[prop_or_default]
+    pub command_for: Option<AttrValue>,
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
@@ -251,6 +264,8 @@ fn button_view(props: &ButtonProps) -> Html {
                 aria-expanded={aria_expanded}
                 title={props.title.clone()}
                 interestfor={tooltip_id}
+                command={props.command.clone()}
+                commandfor={props.command_for.clone()}
                 style={anchor_style}
             >
                 { for props.children.iter() }
@@ -279,6 +294,8 @@ fn icon_button_view(props: &IconButtonProps) -> Html {
             aria-expanded={aria_bool(props.aria_expanded)}
             title={props.title.clone()}
             interestfor={tooltip_id.clone()}
+            command={props.command.clone()}
+            commandfor={props.command_for.clone()}
             style={tooltip_id.as_deref().map(tooltip_trigger_style)}
         >
             { for props.children.iter() }
@@ -429,6 +446,8 @@ mod tests {
             aria_expanded: None,
             title: None,
             tooltip_id: None,
+            command: None,
+            command_for: None,
             children: Children::default(),
             onclick: Callback::default(),
         }
@@ -450,6 +469,8 @@ mod tests {
             aria_expanded: None,
             title: None,
             tooltip_id: None,
+            command: None,
+            command_for: None,
             children: Children::default(),
             onclick: Callback::default(),
         }
@@ -702,6 +723,41 @@ mod tests {
             Some("anchor-name: --tooltip-s-edit-release;")
         );
         assert!(attr(&tag, "class").is_some_and(|classes| classes.contains("tooltip-delay")));
+    }
+
+    #[test]
+    fn emits_invoker_commands_only_for_native_buttons() {
+        let mut props = props();
+        props.command = Some("show-modal".into());
+        props.command_for = Some("confirm-deploy".into());
+
+        let button = vtag(button_view(&props));
+        assert_eq!(attr(&button, "command").as_deref(), Some("show-modal"));
+        assert_eq!(
+            attr(&button, "commandfor").as_deref(),
+            Some("confirm-deploy")
+        );
+
+        props.r#type = ButtonType::Link;
+        props.href = "/deployments".into();
+        let link = vtag(button_view(&props));
+        assert_eq!(link.tag(), "a");
+        assert_eq!(attr(&link, "command"), None);
+        assert_eq!(attr(&link, "commandfor"), None);
+    }
+
+    #[test]
+    fn icon_button_emits_invoker_commands() {
+        let mut props = icon_props();
+        props.command = Some("close".into());
+        props.command_for = Some("confirm-deploy".into());
+
+        let button = vtag(icon_button_view(&props));
+        assert_eq!(attr(&button, "command").as_deref(), Some("close"));
+        assert_eq!(
+            attr(&button, "commandfor").as_deref(),
+            Some("confirm-deploy")
+        );
     }
 
     #[test]

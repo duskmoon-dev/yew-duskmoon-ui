@@ -1,18 +1,46 @@
 use yew::prelude::*;
 use yew::virtual_dom::AttrValue;
 
-use super::variants;
-
-#[derive(Clone, Copy, Default, PartialEq, Eq)]
-pub enum PopoverTrigger {
+/// Native Popover API behavior for the generated surface.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum PopoverMode {
     #[default]
-    Click,
-    Hover,
-    Focus,
+    Auto,
+    Manual,
+}
+
+impl PopoverMode {
+    const fn as_str(self) -> &'static str {
+        match self {
+            Self::Auto => "auto",
+            Self::Manual => "manual",
+        }
+    }
+}
+
+/// Invoker command emitted by the generated trigger button.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum PopoverCommand {
+    #[default]
+    Toggle,
+    Show,
+    Hide,
+}
+
+impl PopoverCommand {
+    const fn as_str(self) -> &'static str {
+        match self {
+            Self::Toggle => "toggle-popover",
+            Self::Show => "show-popover",
+            Self::Hide => "hide-popover",
+        }
+    }
 }
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct PopoverProps {
+    /// Stable DOM id targeted by the generated HTML invoker command.
+    pub id: AttrValue,
     #[prop_or_default]
     pub class: Classes,
     #[prop_or_default]
@@ -20,93 +48,47 @@ pub struct PopoverProps {
     #[prop_or_default]
     pub variant: Option<String>,
     #[prop_or_default]
-    pub trigger: PopoverTrigger,
+    pub mode: PopoverMode,
+    #[prop_or_default]
+    pub command: PopoverCommand,
     #[prop_or(AttrValue::from("Show popover"))]
     pub trigger_label: AttrValue,
     #[prop_or_else(default_trigger_class)]
     pub trigger_class: Classes,
 }
 
+/// An anchored native popover with a declarative HTML command trigger.
+///
+/// Display, light-dismiss, Escape handling, and top-layer behavior are owned
+/// by the browser. Use [`PopoverMode::Manual`] when the surface must remain
+/// open until an explicit `hide-popover` command is invoked.
 #[function_component(Popover)]
 pub fn popover(props: &PopoverProps) -> Html {
-    let is_open = use_state_eq(|| false);
-    let trigger = props.trigger;
-    let placement = PopoverPlacement::from_classes(&props.class);
-    let mut classes = classes!("popover");
-    if let Some(variant) = &props.variant {
-        classes.push(format!("popover-{}", variant));
-    }
-    if trigger == PopoverTrigger::Hover {
-        classes.push("popover-hover");
-    }
-    if *is_open {
-        classes.push("show");
-        classes.push("popover-show");
-    }
-    classes.push(props.class.clone());
+    popover_view(props)
+}
 
-    let onclick = {
-        let is_open = is_open.clone();
-        Callback::from(move |_| {
-            if trigger == PopoverTrigger::Click {
-                is_open.set(!*is_open);
-            }
-        })
-    };
-    let onmouseenter = {
-        let is_open = is_open.clone();
-        Callback::from(move |_| {
-            if trigger == PopoverTrigger::Hover {
-                is_open.set(true);
-            }
-        })
-    };
-    let onmouseleave = {
-        let is_open = is_open.clone();
-        Callback::from(move |_| {
-            if trigger == PopoverTrigger::Hover {
-                is_open.set(false);
-            }
-        })
-    };
-    let onfocus = {
-        let is_open = is_open.clone();
-        Callback::from(move |_| {
-            if trigger == PopoverTrigger::Focus {
-                is_open.set(true);
-            }
-        })
-    };
-    let onblur = {
-        let is_open = is_open.clone();
-        Callback::from(move |_| {
-            if trigger == PopoverTrigger::Focus {
-                is_open.set(false);
-            }
-        })
-    };
-
-    let content_style = popover_content_style(props.variant.as_deref(), placement);
-    let arrow_style = popover_arrow_style(props.variant.as_deref(), placement);
-    let root_style = AttrValue::from(
-        "position: relative; display: inline-block; width: max-content; justify-self: start; opacity: 1; visibility: visible; z-index: auto; min-width: 0; max-width: none; padding: 0; background: transparent; border: 0; box-shadow: none;",
-    );
-    let expanded = if *is_open { "true" } else { "false" };
+fn popover_view(props: &PopoverProps) -> Html {
+    let anchor = popover_anchor_name(&props.id);
+    let trigger_style: AttrValue = format!("anchor-name: {anchor};").into();
+    let surface_style: AttrValue = format!("position-anchor: {anchor};").into();
 
     html! {
-        <div class={classes} style={root_style} onmouseenter={onmouseenter} onmouseleave={onmouseleave}>
+        <>
             <button
                 type="button"
                 class={props.trigger_class.clone()}
-                aria-haspopup="dialog"
-                aria-expanded={expanded}
-                onclick={onclick}
-                onfocus={onfocus}
-                onblur={onblur}
+                command={props.command.as_str()}
+                commandfor={props.id.clone()}
+                style={trigger_style}
             >
                 { props.trigger_label.clone() }
             </button>
-            <div class="popover-content" role="dialog" style={content_style}>
+            <div
+                id={props.id.clone()}
+                popover={props.mode.as_str()}
+                class={popover_classes(props)}
+                style={surface_style}
+            >
                 {
                     if props.children.is_empty() {
                         html! { <div class="popover-body">{ "Popover content" }</div> }
@@ -114,9 +96,9 @@ pub fn popover(props: &PopoverProps) -> Html {
                         html! { <>{ for props.children.iter() }</> }
                     }
                 }
-                <span class="popover-arrow" aria-hidden="true" style={arrow_style}></span>
+                <span class="popover-arrow" aria-hidden="true"></span>
             </div>
-        </div>
+        </>
     }
 }
 
@@ -124,62 +106,122 @@ fn default_trigger_class() -> Classes {
     classes!("btn", "btn-primary")
 }
 
-#[derive(Clone, Copy)]
-enum PopoverPlacement {
-    Top,
-    Bottom,
-    Left,
-    Right,
+fn popover_classes(props: &PopoverProps) -> Classes {
+    let mut classes = classes!("popover");
+    if let Some(variant) = &props.variant {
+        classes.push(format!("popover-{variant}"));
+    }
+    classes.push(props.class.clone());
+    classes
 }
 
-impl PopoverPlacement {
-    fn from_classes(classes: &Classes) -> Self {
-        if classes.contains("popover-bottom") {
-            Self::Bottom
-        } else if classes.contains("popover-left") {
-            Self::Left
-        } else if classes.contains("popover-right") {
-            Self::Right
-        } else {
-            Self::Top
+fn popover_anchor_name(id: &str) -> String {
+    if id.is_empty() {
+        "--popover-empty".to_owned()
+    } else if id
+        .chars()
+        .all(|character| character.is_ascii_alphanumeric() || matches!(character, '_' | '-'))
+    {
+        format!("--popover-s-{id}")
+    } else {
+        const HEX: &[u8; 16] = b"0123456789abcdef";
+        let mut encoded = String::with_capacity(id.len() * 2);
+        for byte in id.bytes() {
+            encoded.push(HEX[(byte >> 4) as usize] as char);
+            encoded.push(HEX[(byte & 0x0f) as usize] as char);
         }
-    }
 
-    fn content_style(self) -> &'static str {
-        match self {
-            Self::Top => "top: auto; right: auto; bottom: 100%; left: 50%; height: auto; margin-top: 0; margin-right: 0; margin-bottom: 0.75rem; margin-left: 0;",
-            Self::Bottom => "top: 100%; right: auto; bottom: auto; left: 50%; height: auto; margin-top: 0.75rem; margin-right: 0; margin-bottom: 0; margin-left: 0;",
-            Self::Left => "top: 50%; right: 100%; bottom: auto; left: auto; height: auto; margin-top: 0; margin-right: 0.75rem; margin-bottom: 0; margin-left: 0;",
-            Self::Right => "top: 50%; right: auto; bottom: auto; left: 100%; height: auto; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0.75rem;",
-        }
-    }
-
-    fn arrow_style(self) -> &'static str {
-        match self {
-            Self::Top => "top: auto; right: auto; bottom: -0.375rem; left: 50%; transform: translateX(-50%) rotate(45deg); border-style: solid; border-width: 1px; border-top-width: 0; border-left-width: 0;",
-            Self::Bottom => "top: -0.375rem; right: auto; bottom: auto; left: 50%; transform: translateX(-50%) rotate(45deg); border-style: solid; border-width: 1px; border-bottom-width: 0; border-right-width: 0;",
-            Self::Left => "top: 50%; right: -0.375rem; bottom: auto; left: auto; transform: translateY(-50%) rotate(45deg); border-style: solid; border-width: 1px; border-left-width: 0; border-bottom-width: 0;",
-            Self::Right => "top: 50%; right: auto; bottom: auto; left: -0.375rem; transform: translateY(-50%) rotate(45deg); border-style: solid; border-width: 1px; border-right-width: 0; border-top-width: 0;",
-        }
+        format!("--popover-x-{encoded}")
     }
 }
 
-fn popover_content_style(variant: Option<&str>, placement: PopoverPlacement) -> AttrValue {
-    let declaration = format!(
-        "{} {}",
-        placement.content_style(),
-        "background-color: color-mix(in oklch, var(--component-solid, var(--component-color, var(--color-surface))) var(--popover-color-intensity, 30%), var(--color-surface)); border-color: var(--component-color, var(--color-outline-variant)); color: var(--component-on-container, var(--color-on-surface)); --color-on-surface: var(--component-on-container, var(--color-on-surface)); --color-on-surface-variant: var(--component-on-container, var(--color-on-surface-variant));"
-    );
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
 
-    variants::style(variant, &declaration)
-}
+    use super::*;
+    use yew::virtual_dom::{VNode, VTag};
 
-fn popover_arrow_style(variant: Option<&str>, placement: PopoverPlacement) -> AttrValue {
-    let declaration = format!(
-        "{} {}",
-        placement.arrow_style(),
-        "background-color: color-mix(in oklch, var(--component-solid, var(--component-color, var(--color-surface))) var(--popover-color-intensity, 30%), var(--color-surface)); border-color: var(--component-color, var(--color-outline-variant));"
-    );
+    fn props() -> PopoverProps {
+        PopoverProps {
+            id: "deployment-options".into(),
+            class: classes!("popover-bottom"),
+            children: Children::default(),
+            variant: Some("primary".to_owned()),
+            mode: PopoverMode::Auto,
+            command: PopoverCommand::Toggle,
+            trigger_label: "Show options".into(),
+            trigger_class: default_trigger_class(),
+        }
+    }
 
-    variants::style(variant, &declaration)
+    fn tag(node: &VNode) -> &VTag {
+        match node {
+            VNode::VTag(tag) => tag,
+            other => panic!("expected VTag, got {other:?}"),
+        }
+    }
+
+    fn attrs(tag: &VTag) -> HashMap<&str, &str> {
+        tag.attributes.iter().collect()
+    }
+
+    #[test]
+    fn emits_native_command_and_popover_contract() {
+        let VNode::VList(list) = popover_view(&props()) else {
+            panic!("popover should render trigger and surface siblings");
+        };
+        assert_eq!(list.len(), 2);
+
+        let trigger = tag(&list[0]);
+        let trigger_attrs = attrs(trigger);
+        assert_eq!(trigger.tag(), "button");
+        assert_eq!(trigger_attrs.get("command"), Some(&"toggle-popover"));
+        assert_eq!(trigger_attrs.get("commandfor"), Some(&"deployment-options"));
+        assert_eq!(
+            trigger_attrs.get("style"),
+            Some(&"anchor-name: --popover-s-deployment-options;")
+        );
+
+        let surface = tag(&list[1]);
+        let surface_attrs = attrs(surface);
+        assert_eq!(surface.tag(), "div");
+        assert_eq!(surface_attrs.get("id"), Some(&"deployment-options"));
+        assert_eq!(surface_attrs.get("popover"), Some(&"auto"));
+        assert_eq!(
+            surface_attrs.get("class"),
+            Some(&"popover popover-primary popover-bottom")
+        );
+        assert_eq!(
+            surface_attrs.get("style"),
+            Some(&"position-anchor: --popover-s-deployment-options;")
+        );
+    }
+
+    #[test]
+    fn supports_manual_surfaces_and_each_native_command() {
+        let mut props = props();
+        props.mode = PopoverMode::Manual;
+        props.command = PopoverCommand::Show;
+
+        let VNode::VList(list) = popover_view(&props) else {
+            panic!("popover should render trigger and surface siblings");
+        };
+        assert_eq!(attrs(tag(&list[0])).get("command"), Some(&"show-popover"));
+        assert_eq!(attrs(tag(&list[1])).get("popover"), Some(&"manual"));
+        assert_eq!(PopoverCommand::Hide.as_str(), "hide-popover");
+    }
+
+    #[test]
+    fn creates_css_safe_anchor_names() {
+        assert_eq!(
+            popover_anchor_name("row action:编辑"),
+            "--popover-x-726f7720616374696f6e3ae7bc96e8be91"
+        );
+        assert_eq!(popover_anchor_name(""), "--popover-empty");
+        assert_eq!(
+            popover_anchor_name("deployment-options"),
+            "--popover-s-deployment-options"
+        );
+    }
 }

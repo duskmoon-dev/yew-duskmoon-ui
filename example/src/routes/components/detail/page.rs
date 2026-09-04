@@ -206,6 +206,18 @@ pub const BUTTON_API: &[ApiRow] = &[
         docs: "Associates a sibling Tooltip and supplies interestfor, aria-describedby, and a matching CSS anchor.",
     },
     ApiRow {
+        prop: "command",
+        ty: "Option<AttrValue>",
+        default: "None",
+        docs: "Native HTML invoker command such as show-modal, close, or toggle-popover. Native buttons only.",
+    },
+    ApiRow {
+        prop: "command_for",
+        ty: "Option<AttrValue>",
+        default: "None",
+        docs: "DOM id targeted by command and emitted as commandfor. Native buttons only.",
+    },
+    ApiRow {
         prop: "children",
         ty: "Children",
         default: "empty",
@@ -303,6 +315,18 @@ pub const ICON_BUTTON_API: &[ApiRow] = &[
         ty: "Option<AttrValue>",
         default: "None",
         docs: "Associates a sibling Tooltip and supplies interestfor, aria-describedby, and a matching CSS anchor.",
+    },
+    ApiRow {
+        prop: "command",
+        ty: "Option<AttrValue>",
+        default: "None",
+        docs: "Native HTML invoker command such as show-modal, close, or toggle-popover.",
+    },
+    ApiRow {
+        prop: "command_for",
+        ty: "Option<AttrValue>",
+        default: "None",
+        docs: "DOM id targeted by command and emitted as commandfor.",
     },
     ApiRow {
         prop: "children",

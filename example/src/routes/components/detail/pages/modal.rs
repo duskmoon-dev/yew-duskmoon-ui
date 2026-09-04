@@ -1,59 +1,82 @@
 use crate::routes::components::catalog::ComponentSpec;
-use crate::routes::components::detail::page::{primary_variant, ComponentPage, STANDARD_API};
-use crate::routes::components::palette::{variant, PaletteColor};
+use crate::routes::components::detail::page::{ApiRow, ComponentPage};
 use yew::prelude::*;
-use yew_duskmoon::Modal;
+use yew_duskmoon::{Button, Modal};
+
+const API: &[ApiRow] = &[
+    ApiRow {
+        prop: "id",
+        ty: "AttrValue",
+        default: "required",
+        docs: "Stable DOM id targeted by commandfor. Modal is a legacy name implementing the native Dialog contract.",
+    },
+    ApiRow {
+        prop: "class",
+        ty: "Classes",
+        default: "empty",
+        docs: "Extra classes appended to the native dialog element.",
+    },
+    ApiRow {
+        prop: "children",
+        ty: "Children",
+        default: "empty",
+        docs: "Native dialog content. Prefer Dialog in new code.",
+    },
+    ApiRow {
+        prop: "variant",
+        ty: "Option<String>",
+        default: "None",
+        docs: "Legacy escape hatch forwarded to the Dialog contract.",
+    },
+];
 
 pub fn page(spec: &'static ComponentSpec) -> ComponentPage {
-    ComponentPage::new(spec, usage, STANDARD_API, demo, color_variant)
+    ComponentPage::without_color_variants(spec, usage, API, demo)
 }
 
 fn usage(_: &ComponentSpec) -> String {
-    "use yew_duskmoon::Modal;\n\nhtml! {\n    <Modal class=\"modal-open modal-middle\" variant={Some(\"primary\".to_owned())}>\n        <div class=\"modal-box\">\n            <div class=\"modal-header\">\n                <h2 class=\"modal-title\">{ \"Confirm deployment\" }</h2>\n            </div>\n            <div class=\"modal-body\">{ \"Review the release notes before continuing.\" }</div>\n            <div class=\"modal-action\">\n                <button class=\"btn btn-text\">{ \"Cancel\" }</button>\n                <button class=\"btn btn-primary\">{ \"Deploy\" }</button>\n            </div>\n        </div>\n    </Modal>\n}".to_owned()
+    r#"// Legacy name with the new Dialog contract. Prefer `Dialog` in new code.
+use yew_duskmoon::{Button, Modal};
+
+html! {
+    <>
+        <Button command="show-modal" command_for="legacy-modal">{ "Open" }</Button>
+        <Modal id="legacy-modal">
+            <div class="dialog-box">
+                <div class="dialog-header">
+                    <h2 class="dialog-title">{ "Native modal dialog" }</h2>
+                </div>
+                <div class="dialog-body">{ "Modal now renders the same native dialog contract." }</div>
+                <div class="dialog-footer">
+                    <Button command="close" command_for="legacy-modal">{ "Close" }</Button>
+                </div>
+            </div>
+        </Modal>
+    </>
+}"#
+        .to_owned()
 }
 
 fn demo(_: &ComponentSpec) -> Html {
     html! {
         <>
-            { preview_style() }
-            <Modal variant={primary_variant()} class="modal-open modal-middle component-detail-modal-preview">
-                <div class="modal-box">
-                    <button class="modal-close" aria-label="Close modal">{ "x" }</button>
-                    <div class="modal-header">
-                        <h2 class="modal-title">{ "Confirm deployment" }</h2>
+            <p>{ "Modal is retained as a legacy name and now requires the native Dialog contract. Prefer Dialog in new code." }</p>
+            <Button command="show-modal" command_for="demo-legacy-modal" variant={Some("primary".to_owned())}>
+                { "Open compatibility modal" }
+            </Button>
+            <Modal id="demo-legacy-modal">
+                <div class="dialog-box">
+                    <div class="dialog-header">
+                        <h2 class="dialog-title">{ "Native modal dialog" }</h2>
                     </div>
-                    <div class="modal-body">
-                        <p>{ "Deploy the selected build to production after the final health check." }</p>
+                    <div class="dialog-body">
+                        <p>{ "This surface uses the browser's dialog top layer instead of modal-open classes or Yew visibility state." }</p>
                     </div>
-                    <div class="modal-action">
-                        <button class="btn btn-text">{ "Cancel" }</button>
-                        <button class="btn btn-primary">{ "Deploy" }</button>
+                    <div class="dialog-footer">
+                        <Button command="close" command_for="demo-legacy-modal">{ "Close" }</Button>
                     </div>
                 </div>
             </Modal>
         </>
-    }
-}
-
-fn color_variant(color: PaletteColor) -> Html {
-    html! {
-        <Modal variant={variant(color)} class="modal-open modal-middle component-detail-modal-preview">
-            <div class="modal-box">
-                <div class="modal-header">
-                    <h2 class="modal-title">{ color.label }</h2>
-                </div>
-                <div class="modal-body">
-                    <code>{ format!("modal-{}", color.key) }</code>
-                </div>
-            </div>
-        </Modal>
-    }
-}
-
-fn preview_style() -> Html {
-    html! {
-        <style>
-            { ".component-detail-modal-preview.modal{position:relative;inset:auto;z-index:auto;visibility:visible;opacity:1;width:min(100%,34rem);min-height:18rem;padding:1rem;border:1px solid var(--dm-line);border-radius:8px;background:color-mix(in oklch,var(--dm-ink) 34%,transparent)}.component-detail-modal-preview.modal .modal-backdrop{display:none}.component-detail-modal-preview.modal .modal-box{width:100%;max-height:none;border:1px solid color-mix(in oklch,var(--component-color,var(--dm-line-strong)) 34%,var(--dm-line))}" }
-        </style>
     }
 }
