@@ -1,5 +1,38 @@
 use yew::virtual_dom::AttrValue;
 
+/// Color tokens shared by components whose core CSS exposes the complete
+/// DuskMoon palette.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Color {
+    Primary,
+    Secondary,
+    Tertiary,
+    Accent,
+    Neutral,
+    Base,
+    Info,
+    Success,
+    Warning,
+    Error,
+}
+
+impl Color {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Primary => "primary",
+            Self::Secondary => "secondary",
+            Self::Tertiary => "tertiary",
+            Self::Accent => "accent",
+            Self::Neutral => "neutral",
+            Self::Base => "base",
+            Self::Info => "info",
+            Self::Success => "success",
+            Self::Warning => "warning",
+            Self::Error => "error",
+        }
+    }
+}
+
 pub fn vars(variant: Option<&str>) -> &'static str {
     match variant {
         Some("primary") => "--component-color: var(--color-primary); --component-content: var(--color-primary-content); --component-solid: var(--color-primary); --component-container: var(--color-primary-container); --component-on-container: var(--color-on-primary-container);",
@@ -24,5 +57,30 @@ pub fn style(variant: Option<&str>, declaration: &str) -> AttrValue {
         (true, false) => AttrValue::from(declaration.to_owned()),
         (false, true) => AttrValue::from(vars),
         (false, false) => AttrValue::from(format!("{vars} {declaration}")),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Color;
+
+    #[test]
+    fn maps_every_shared_color_to_its_core_suffix() {
+        let mappings = [
+            (Color::Primary, "primary"),
+            (Color::Secondary, "secondary"),
+            (Color::Tertiary, "tertiary"),
+            (Color::Accent, "accent"),
+            (Color::Neutral, "neutral"),
+            (Color::Base, "base"),
+            (Color::Info, "info"),
+            (Color::Success, "success"),
+            (Color::Warning, "warning"),
+            (Color::Error, "error"),
+        ];
+
+        for (color, suffix) in mappings {
+            assert_eq!(color.as_str(), suffix);
+        }
     }
 }
