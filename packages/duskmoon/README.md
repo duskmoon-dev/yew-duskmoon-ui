@@ -15,7 +15,7 @@ Duskmoon UI components for [Yew](https://yew.rs/) applications.
 ```toml
 [dependencies]
 yew = { version = "0.23", features = ["csr"] }
-yew-duskmoon = "0.9.1"
+yew-duskmoon = "0.9.2"
 ```
 
 The default `full` feature enables the feature-gated components: `AppHeader`, `Button`, `IconButton`, `Card`, `Link`, and `Typography`.
@@ -24,7 +24,7 @@ For explicit feature selection:
 
 ```toml
 [dependencies]
-yew-duskmoon = { version = "0.9.1", default-features = false, features = ["button", "card"] }
+yew-duskmoon = { version = "0.9.2", default-features = false, features = ["button", "card"] }
 ```
 
 ## CSS
