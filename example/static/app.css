@@ -2076,34 +2076,6 @@ textarea {
     background: color-mix(in oklch, var(--component-container) 50%, transparent);
 }
 
-.color-table {
-    width: 100%;
-    border-collapse: collapse;
-    overflow: hidden;
-    border: 1px solid var(--dm-line);
-    border-radius: 8px;
-}
-
-.color-table th,
-.color-table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--dm-line);
-    text-align: left;
-}
-
-.color-table th {
-    background: var(--color-surface-container-high);
-}
-
-.table-color-row {
-    background: color-mix(in oklch, var(--component-container) 36%, transparent);
-}
-
-.table-color-row td:first-child {
-    border-left: 5px solid var(--component-color);
-    font-weight: 800;
-}
-
 .divider-palette,
 .stepper-palette,
 .surface-scale {
@@ -3448,9 +3420,23 @@ textarea {
 
 .detail-copy,
 .detail-code,
+.detail-api-content,
 .api-table-wrap,
 .demo-stage {
     min-width: 0;
+}
+
+.detail-api-content,
+.api-subsection {
+    display: grid;
+    gap: 18px;
+}
+
+.api-subsection h3 {
+    margin: 0;
+    color: var(--dm-paper);
+    font-family: var(--font-display);
+    font-size: 1.15rem;
 }
 
 .detail-copy {
@@ -3550,6 +3536,34 @@ textarea {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
+}
+
+.component-detail-button-demo,
+.component-detail-demo-group {
+    display: grid;
+    gap: 20px;
+    width: 100%;
+}
+
+.component-detail-demo-group {
+    gap: 12px;
+}
+
+.component-detail-demo-group h3,
+.component-detail-demo-group p {
+    margin: 0;
+}
+
+.component-detail-demo-group h3 {
+    color: var(--dm-paper);
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+}
+
+.component-detail-demo-group p {
+    margin-top: 4px;
+    color: var(--dm-paper-muted);
+    line-height: 1.5;
 }
 
 .component-detail-markdown-stack {
@@ -3696,31 +3710,50 @@ textarea {
     background: color-mix(in oklch, var(--component-container, var(--color-surface-container-high)) 54%, transparent);
 }
 
-.component-detail-table-demo {
-    display: grid;
-    width: min(100%, 520px);
-    overflow: hidden;
-    border: 1px solid var(--dm-line);
-    border-radius: 8px;
+.component-detail-data-management,
+.component-detail-table-wrap {
+    width: 100%;
+    min-width: 0;
 }
 
-.component-detail-table-row {
+.component-detail-data-management {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
+}
+
+.component-detail-table-help {
+    margin: 0;
+    color: var(--dm-paper-muted);
+}
+
+.component-detail-table-demo {
+    min-width: 680px;
+}
+
+.component-detail-table-scroll {
+    max-height: 18rem;
+    overflow: auto;
+}
+
+.component-detail-table-demo th:last-child,
+.component-detail-table-demo td:last-child {
+    text-align: right;
+}
+
+.component-detail-row-actions,
+.component-detail-tooltip-anchor {
+    display: inline-flex;
     align-items: center;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--dm-line);
+    gap: 4px;
 }
 
-.component-detail-table-row:last-child {
-    border-bottom: 0;
+.component-detail-row-actions {
+    justify-content: flex-end;
+    white-space: nowrap;
 }
 
-.component-detail-table-row.is-head {
-    color: var(--dm-paper);
-    font-weight: 800;
-    background: color-mix(in oklch, var(--color-surface-container-high) 82%, transparent);
+.component-detail-tooltip-color code {
+    overflow-wrap: anywhere;
 }
 
 .component-detail-breadcrumbs-demo,
@@ -4262,67 +4295,6 @@ textarea {
 
     .hero-visual {
         min-height: 350px;
-    }
-
-    .color-table,
-    .color-table thead,
-    .color-table tbody,
-    .color-table tr,
-    .color-table th,
-    .color-table td {
-        display: block;
-        width: 100%;
-    }
-
-    .color-table thead {
-        display: none;
-    }
-
-    .color-table tr {
-        border-bottom: 1px solid var(--dm-line);
-    }
-
-    .color-table tr:last-child {
-        border-bottom: 0;
-    }
-
-    .color-table td {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        border-bottom: 0;
-    }
-
-    .color-table td:first-child {
-        border-left-width: 4px;
-    }
-
-    .color-table td:nth-child(1)::before {
-        content: "Token";
-    }
-
-    .color-table td:nth-child(2)::before {
-        content: "Class";
-    }
-
-    .color-table td:nth-child(3)::before {
-        content: "Status";
-    }
-
-    .color-table td::before {
-        flex: 0 0 68px;
-        color: var(--dm-paper-muted);
-        font-size: 0.72rem;
-        font-weight: 900;
-        text-transform: uppercase;
-    }
-
-    .color-table code {
-        min-width: 0;
-        white-space: normal;
-        overflow-wrap: anywhere;
-        text-align: right;
     }
 
     .moonplate {

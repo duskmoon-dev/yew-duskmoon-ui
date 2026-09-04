@@ -1,10 +1,10 @@
 use strum::IntoEnumIterator;
 use yew::prelude::*;
 use yew_duskmoon::button::ButtonType;
-use yew_duskmoon::Card;
 use yew_duskmoon::Button;
+use yew_duskmoon::Card;
 
-use super::palette::{variant, PALETTE};
+use super::palette::PALETTE;
 
 /// Components page
 #[function_component(ButtonComponent)]
@@ -26,7 +26,7 @@ pub fn component() -> Html {
                             <div class="color-grid button-color-grid">
                                 { for PALETTE.into_iter().map(|color| html! {
                                     <div class="color-cell">
-                                        <Button variant={variant(color)} classes="color-button">
+                                        <Button color={color.color} classes="color-button">
                                             { html! { color.label } }
                                         </Button>
                                         <code>{ format!("btn-{}", color.key) }</code>

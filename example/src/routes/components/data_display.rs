@@ -1,6 +1,9 @@
 use yew::prelude::*;
 use yew_duskmoon::typography::TypographyLevel;
-use yew_duskmoon::{Badge, Card, Chip, DmMarkdown, List, Table, Typography};
+use yew_duskmoon::{
+    Badge, BadgeAppearance, BadgeSize, Card, Chip, Color, DmMarkdown, List, Table, TableBorders,
+    TableDensity, Typography,
+};
 
 use super::palette::{variant, PALETTE};
 
@@ -15,9 +18,15 @@ pub fn data_display_component() -> Html {
                     <div class="color-grid compact-color-grid">
                         { for PALETTE.into_iter().map(|color| html! {
                             <div class="color-cell">
-                                <Badge variant={variant(color)}>{ html! { color.label } }</Badge>
-                                <Badge variant={variant(color)} class="badge-soft">{ "Soft" }</Badge>
-                                <code>{ format!("badge-{}", color.key) }</code>
+                                <Badge color={color.color}>{ html! { color.label } }</Badge>
+                                <Badge
+                                    color={color.color}
+                                    appearance={BadgeAppearance::Tonal}
+                                    size={BadgeSize::Small}
+                                >
+                                    { "Tonal" }
+                                </Badge>
+                                <code>{ format!("Color::{}", color.label) }</code>
                             </div>
                         }) }
                     </div>
@@ -41,7 +50,7 @@ pub fn data_display_component() -> Html {
                             <List variant={variant(color)} class="color-list">
                                 <div class="color-list-row">
                                     <span>{ color.label }</span>
-                                    <Badge variant={variant(color)}>{ html! { color.key } }</Badge>
+                                    <Badge color={color.color} size={BadgeSize::Small}>{ html! { color.key } }</Badge>
                                 </div>
                             </List>
                         }) }
@@ -61,19 +70,68 @@ pub fn data_display_component() -> Html {
                 </Card>
 
                 <Card title={html! { <Typography level={TypographyLevel::H4}>{"Table Component"}</Typography> }} classes="component-card">
-                    <div class="color-grid compact-color-grid">
-                        { for PALETTE.into_iter().map(|color| html! {
-                            <Table variant={variant(color)} class="color-table">
-                                <tbody>
-                                    <tr class="table-color-row">
-                                        <td>{ color.label }</td>
-                                        <td><code>{ format!("table-{}", color.key) }</code></td>
-                                        <td><Badge variant={variant(color)}>{ "Available" }</Badge></td>
-                                    </tr>
-                                </tbody>
-                            </Table>
-                        }) }
-                    </div>
+                    <Table
+                        responsive={true}
+                        hoverable={true}
+                        striped={true}
+                        density={TableDensity::Compact}
+                        borders={TableBorders::Bordered}
+                    >
+                        <caption>{ "Semantic table using typed density and border modifiers" }</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">{ "Record" }</th>
+                                <th scope="col">{ "Category" }</th>
+                                <th scope="col">{ "Status" }</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">{ "Record A-104" }</th>
+                                <td>
+                                    <Badge
+                                        color={Color::Secondary}
+                                        appearance={BadgeAppearance::Tonal}
+                                        size={BadgeSize::Small}
+                                    >
+                                        { "Standard" }
+                                    </Badge>
+                                </td>
+                                <td>
+                                    <Badge
+                                        color={Color::Success}
+                                        appearance={BadgeAppearance::Outlined}
+                                        size={BadgeSize::Small}
+                                        aria_label="Status: ready"
+                                    >
+                                        { "Ready" }
+                                    </Badge>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">{ "Record B-208" }</th>
+                                <td>
+                                    <Badge
+                                        color={Color::Tertiary}
+                                        appearance={BadgeAppearance::Tonal}
+                                        size={BadgeSize::Small}
+                                    >
+                                        { "External" }
+                                    </Badge>
+                                </td>
+                                <td>
+                                    <Badge
+                                        color={Color::Warning}
+                                        appearance={BadgeAppearance::Outlined}
+                                        size={BadgeSize::Small}
+                                        aria_label="Status: pending"
+                                    >
+                                        { "Pending" }
+                                    </Badge>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </Table>
                 </Card>
             </div>
         </div>

@@ -2,7 +2,7 @@ use crate::routes::components::catalog::ComponentSpec;
 use crate::routes::components::detail::page::{primary_variant, ApiRow, ComponentPage};
 use crate::routes::components::palette::{variant, PaletteColor};
 use yew::prelude::*;
-use yew_duskmoon::{Badge, List};
+use yew_duskmoon::{Badge, BadgeSize, List};
 
 const LIST_API: &[ApiRow] = &[
     ApiRow {
@@ -42,7 +42,7 @@ fn demo(_: &ComponentSpec) -> Html {
                     <span class="list-item-secondary">{ "12 unread messages" }</span>
                 </div>
                 <div class="list-item-trailing">
-                    <Badge variant={primary_variant()} class="badge-sm">{ "12" }</Badge>
+                    <Badge variant={primary_variant()} size={BadgeSize::Small}>{ "12" }</Badge>
                 </div>
             </div>
             <div class="list-item list-item-two-line list-item-interactive">

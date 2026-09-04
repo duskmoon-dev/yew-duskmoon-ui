@@ -1,8 +1,8 @@
 use crate::routes::components::catalog::ComponentSpec;
-use crate::routes::components::detail::page::{ApiRow, ComponentPage, primary_variant};
-use crate::routes::components::palette::{variant, PaletteColor};
+use crate::routes::components::detail::page::{ApiRow, ComponentPage};
+use crate::routes::components::palette::PaletteColor;
 use yew::prelude::*;
-use yew_duskmoon::Badge;
+use yew_duskmoon::{Badge, BadgeAppearance, BadgeSize, Color};
 
 const BADGE_API: &[ApiRow] = &[
     ApiRow {
@@ -18,10 +18,46 @@ const BADGE_API: &[ApiRow] = &[
         docs: "Short label, count, or status text rendered inside the badge.",
     },
     ApiRow {
+        prop: "color",
+        ty: "Option<Color>",
+        default: "None",
+        docs: "Typed DuskMoon palette modifier. With no color, the core neutral surface treatment is used.",
+    },
+    ApiRow {
+        prop: "appearance",
+        ty: "BadgeAppearance",
+        default: "Filled",
+        docs: "Filled, Tonal, or Outlined treatment using the exact core class contract.",
+    },
+    ApiRow {
+        prop: "size",
+        ty: "BadgeSize",
+        default: "Medium",
+        docs: "Core-supported Small, Medium, or Large size.",
+    },
+    ApiRow {
         prop: "variant",
         ty: "Option<String>",
         default: "None",
-        docs: "Appends a color modifier class such as badge-success.",
+        docs: "Legacy escape hatch that appends badge-{variant}. It takes precedence over color; typed appearance and size still apply.",
+    },
+    ApiRow {
+        prop: "role",
+        ty: "Option<AttrValue>",
+        default: "None",
+        docs: "Optional semantic role. Ordinary metadata badges intentionally receive no status role by default.",
+    },
+    ApiRow {
+        prop: "aria_label",
+        ty: "Option<AttrValue>",
+        default: "None",
+        docs: "Optional accessible label for status or count badges.",
+    },
+    ApiRow {
+        prop: "title",
+        ty: "Option<AttrValue>",
+        default: "None",
+        docs: "Optional native title text.",
     },
 ];
 
@@ -30,17 +66,32 @@ pub fn page(spec: &'static ComponentSpec) -> ComponentPage {
 }
 
 fn usage(_: &ComponentSpec) -> String {
-    "use yew_duskmoon::Badge;\n\nhtml! {\n    <Badge variant={Some(\"success\".to_owned())} class=\"badge-tonal badge-sm\">\n        { \"Active\" }\n    </Badge>\n}".to_owned()
+    "use yew_duskmoon::{Badge, BadgeAppearance, BadgeSize, Color};\n\nhtml! {\n    <Badge\n        color={Color::Secondary}\n        appearance={BadgeAppearance::Tonal}\n        size={BadgeSize::Small}\n    >\n        { \"Metadata\" }\n    </Badge>\n}".to_owned()
 }
 
 fn demo(_: &ComponentSpec) -> Html {
     html! {
         <div class="detail-demo-stack">
-            <Badge variant={primary_variant()}>{ "New" }</Badge>
-            <Badge variant={Some("success".to_owned())} class="badge-tonal">{ "Active" }</Badge>
-            <Badge variant={Some("warning".to_owned())} class="badge-outlined">{ "Pending" }</Badge>
-            <Badge variant={Some("error".to_owned())} class="badge-notification">{ "5" }</Badge>
-            <Badge variant={Some("info".to_owned())} class="badge-dot" />
+            <Badge>{ "Metadata" }</Badge>
+            <Badge
+                color={Color::Secondary}
+                appearance={BadgeAppearance::Tonal}
+                size={BadgeSize::Small}
+                title="Secondary metadata"
+            >
+                { "Metadata" }
+            </Badge>
+            <Badge color={Color::Warning} appearance={BadgeAppearance::Outlined}>
+                { "Pending" }
+            </Badge>
+            <Badge
+                color={Color::Success}
+                appearance={BadgeAppearance::Tonal}
+                role="status"
+                aria_label="Service status: ready"
+            >
+                { "Ready" }
+            </Badge>
         </div>
     }
 }
@@ -48,10 +99,10 @@ fn demo(_: &ComponentSpec) -> Html {
 fn color_variant(color: PaletteColor) -> Html {
     html! {
         <div class="component-detail-color-demo">
-            <Badge variant={variant(color)} class="badge-tonal">
+            <Badge color={color.color} appearance={BadgeAppearance::Tonal}>
                 <span>{ color.label }</span>
             </Badge>
-            <code>{ format!("badge-{}", color.key) }</code>
+            <code>{ format!("Color::{}", color.label) }</code>
         </div>
     }
 }

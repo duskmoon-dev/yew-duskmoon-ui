@@ -2,7 +2,7 @@ use yew::prelude::*;
 use yew_duskmoon::typography::TypographyLevel;
 use yew_duskmoon::{Link, Typography};
 
-use self::page::ComponentPage;
+use self::page::{ApiRow, ComponentPage};
 use super::ComponentsRoute;
 
 mod page;
@@ -77,27 +77,14 @@ fn render_component_detail(page: ComponentPage) -> Html {
                         <span class="section-kicker">{ "API" }</span>
                         <h2>{ "Props" }</h2>
                     </div>
-                    <div class="api-table-wrap">
-                        <table class="api-table">
-                            <thead>
-                                <tr>
-                                    <th>{ "Prop" }</th>
-                                    <th>{ "Type" }</th>
-                                    <th>{ "Default" }</th>
-                                    <th>{ "Description" }</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                { for page.api_rows.iter().map(|row| html! {
-                                    <tr>
-                                        <td><code>{ row.prop }</code></td>
-                                        <td><code>{ row.ty }</code></td>
-                                        <td>{ row.default }</td>
-                                        <td>{ row.docs }</td>
-                                    </tr>
-                                }) }
-                            </tbody>
-                        </table>
+                    <div class="detail-api-content">
+                        { render_api_table(page.api_rows) }
+                        if let Some((title, rows)) = page.additional_api {
+                            <section class="api-subsection" aria-labelledby="additional-api-title">
+                                <h3 id="additional-api-title">{ title }</h3>
+                                { render_api_table(rows) }
+                            </section>
+                        }
                     </div>
                 </section>
 
@@ -111,16 +98,45 @@ fn render_component_detail(page: ComponentPage) -> Html {
                     </div>
                 </section>
 
-                <section id="colors" class="detail-section detail-colors-section">
-                    <div class="detail-section-head">
-                        <span class="section-kicker">{ "Color demo" }</span>
-                        <h2>{ "Theme variants" }</h2>
-                    </div>
-                    <div class="detail-color-grid">
-                        { page.render_color_matrix() }
-                    </div>
-                </section>
+                if page.color_variant.is_some() {
+                    <section id="colors" class="detail-section detail-colors-section">
+                        <div class="detail-section-head">
+                            <span class="section-kicker">{ "Color demo" }</span>
+                            <h2>{ "Theme variants" }</h2>
+                        </div>
+                        <div class="detail-color-grid">
+                            { page.render_color_matrix() }
+                        </div>
+                    </section>
+                }
             </main>
+        </div>
+    }
+}
+
+fn render_api_table(rows: &'static [ApiRow]) -> Html {
+    html! {
+        <div class="api-table-wrap">
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>{ "Prop" }</th>
+                        <th>{ "Type" }</th>
+                        <th>{ "Default" }</th>
+                        <th>{ "Description" }</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    { for rows.iter().map(|row| html! {
+                        <tr>
+                            <td><code>{ row.prop }</code></td>
+                            <td><code>{ row.ty }</code></td>
+                            <td>{ row.default }</td>
+                            <td>{ row.docs }</td>
+                        </tr>
+                    }) }
+                </tbody>
+            </table>
         </div>
     }
 }
