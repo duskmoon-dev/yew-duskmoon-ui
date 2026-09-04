@@ -20,7 +20,7 @@ pub use link::Link;
 pub mod button;
 #[cfg(feature = "button")]
 #[doc(hidden)]
-pub use button::Button;
+pub use button::{Button, ButtonAppearance, ButtonSize, ButtonType, IconButton, NativeButtonType};
 
 #[cfg(feature = "card")]
 pub mod card;

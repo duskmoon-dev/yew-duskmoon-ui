@@ -14,7 +14,7 @@ pub mod avatar;
 pub use avatar::Avatar;
 
 pub mod badge;
-pub use badge::Badge;
+pub use badge::{Badge, BadgeAppearance, BadgeSize};
 
 pub mod bottom_navigation;
 pub use bottom_navigation::BottomNavigation;
@@ -150,7 +150,7 @@ pub mod switch;
 pub use switch::Switch;
 
 pub mod table;
-pub use table::Table;
+pub use table::{Table, TableBorders, TableDensity};
 
 pub mod tabs;
 pub use tabs::Tabs;
@@ -174,9 +174,10 @@ pub mod toggle;
 pub use toggle::Toggle;
 
 pub mod tooltip;
-pub use tooltip::Tooltip;
+pub use tooltip::{Tooltip, TooltipContent, TooltipPlacement, TooltipTone};
 
 pub mod tree_select;
 pub use tree_select::TreeSelect;
 
 mod variants;
+pub use variants::Color;
