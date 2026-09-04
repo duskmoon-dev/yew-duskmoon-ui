@@ -18,7 +18,7 @@
 ```toml
 [dependencies]
 yew = { version = "0.23", features = ["csr"] }
-yew-duskmoon = "0.9.0"
+yew-duskmoon = "0.9.1"
 ```
 
 The default `full` feature enables the core components:
@@ -33,7 +33,7 @@ Use explicit features when you want a smaller enabled component surface:
 
 ```toml
 [dependencies]
-yew-duskmoon = { version = "0.9.0", default-features = false, features = ["button", "card"] }
+yew-duskmoon = { version = "0.9.1", default-features = false, features = ["button", "card"] }
 ```
 
 ## CSS
