@@ -1058,81 +1058,554 @@ fn detect_mermaid_kind(source: &str) -> MermaidKind {
 }
 
 fn render_mermaid_flowchart(source: &str) -> String {
-    let mut nodes: Vec<(String, String)> = Vec::new();
-    let mut edges: Vec<(String, String)> = Vec::new();
-
-    for line in source.lines().map(str::trim) {
-        if line.is_empty()
-            || line.starts_with("graph ")
-            || line.starts_with("flowchart ")
-            || line.starts_with("sequenceDiagram")
-        {
-            continue;
-        }
-
-        if let Some((from, to)) = line.split_once("-->") {
-            let from = parse_mermaid_node(from);
-            let to = parse_mermaid_node(to);
-            upsert_mermaid_node(&mut nodes, &from);
-            upsert_mermaid_node(&mut nodes, &to);
-            edges.push((from.0, to.0));
-        }
-    }
-
-    if nodes.is_empty() {
+    let flowchart = parse_mermaid_flowchart(source);
+    if flowchart.nodes.is_empty() {
         return render_plain_code("mermaid", source);
     }
-
-    let count = nodes.len().max(1);
-    let step = if count == 1 {
-        0.0
-    } else {
-        480.0 / (count - 1) as f32
-    };
-
-    let positions = nodes
-        .iter()
-        .enumerate()
-        .map(|(index, (id, label))| {
-            let x = 80.0 + step * index as f32;
-            let y = if index % 2 == 0 { 78.0 } else { 150.0 };
-            (id.as_str(), label.as_str(), x, y)
-        })
-        .collect::<Vec<_>>();
+    let layout = layout_mermaid_flowchart(&flowchart);
 
     let marker_id = mermaid_marker_id(source);
     let mut svg = format!(
-        "<div class=\"dm-mermaid-chart dm-mermaid-flowchart\" role=\"img\" aria-label=\"Rendered Mermaid flowchart\"><div class=\"dm-mermaid-chart-title\">Mermaid flowchart</div><svg viewBox=\"0 0 640 230\" aria-hidden=\"true\"><defs><marker id=\"{marker_id}\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 z\" class=\"dm-mermaid-arrow\" /></marker></defs>"
+        "<div class=\"dm-mermaid-chart dm-mermaid-flowchart\" role=\"img\" aria-label=\"Rendered Mermaid flowchart\"><div class=\"dm-mermaid-chart-title\">Mermaid flowchart</div><svg viewBox=\"0 0 {:.0} {:.0}\" aria-hidden=\"true\"><defs><marker id=\"{marker_id}\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 z\" class=\"dm-mermaid-arrow\" /></marker></defs>",
+        layout.width, layout.height
     );
 
-    let mut edge_markup = String::new();
-    for (from, to) in edges {
-        if let (Some((_, _, from_x, from_y)), Some((_, _, to_x, to_y))) = (
-            positions.iter().find(|(id, _, _, _)| *id == from),
-            positions.iter().find(|(id, _, _, _)| *id == to),
-        ) {
-            let (start_x, start_y) = rect_edge_point(*from_x, *from_y, *to_x, *to_y, 136.0, 48.0);
-            let (end_x, end_y) = rect_edge_point(*to_x, *to_y, *from_x, *from_y, 136.0, 48.0);
-            edge_markup.push_str(&format!(
-                "<line class=\"dm-mermaid-edge\" x1=\"{start_x:.1}\" y1=\"{start_y:.1}\" x2=\"{end_x:.1}\" y2=\"{end_y:.1}\" marker-end=\"url(#{marker_id})\" />"
+    for (group_index, group) in flowchart.groups.iter().enumerate() {
+        if let Some(bounds) = layout.groups.get(group_index).and_then(|bounds| *bounds) {
+            svg.push_str(&format!(
+                "<g class=\"dm-mermaid-subgraph\"><rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" rx=\"10\" /><text x=\"{:.1}\" y=\"{:.1}\">{}</text></g>",
+                bounds.0,
+                bounds.1,
+                bounds.2,
+                bounds.3,
+                bounds.0 + 12.0,
+                bounds.1 + 20.0,
+                escape_html(&group.label)
             ));
         }
     }
 
-    for (_, label, x, y) in positions {
-        let text = escape_html(label);
+    for edge in &flowchart.edges {
+        let Some(from_index) = flowchart.nodes.iter().position(|node| node.id == edge.from) else {
+            continue;
+        };
+        let Some(to_index) = flowchart.nodes.iter().position(|node| node.id == edge.to) else {
+            continue;
+        };
+        let from = layout.nodes[from_index];
+        let to = layout.nodes[to_index];
+        let (start_x, start_y) =
+            flowchart_edge_point(from, to.x, to.y, flowchart.nodes[from_index].shape);
+        let (end_x, end_y) =
+            flowchart_edge_point(to, from.x, from.y, flowchart.nodes[to_index].shape);
         svg.push_str(&format!(
-            "<g class=\"dm-mermaid-node\"><rect x=\"{:.1}\" y=\"{:.1}\" width=\"136\" height=\"48\" rx=\"8\" /><text x=\"{:.1}\" y=\"{:.1}\" text-anchor=\"middle\">{text}</text></g>",
-            x - 68.0,
-            y - 24.0,
-            x,
-            y + 5.0
+            "<line class=\"dm-mermaid-edge\" x1=\"{start_x:.1}\" y1=\"{start_y:.1}\" x2=\"{end_x:.1}\" y2=\"{end_y:.1}\" marker-end=\"url(#{marker_id})\" />"
+        ));
+        if let Some(label) = &edge.label {
+            svg.push_str(&format!(
+                "<text class=\"dm-flowchart-edge-label\" x=\"{:.1}\" y=\"{:.1}\" text-anchor=\"middle\">{}</text>",
+                (start_x + end_x) / 2.0,
+                (start_y + end_y) / 2.0 - 6.0,
+                escape_html(label)
+            ));
+        }
+    }
+
+    for (node, position) in flowchart.nodes.iter().zip(&layout.nodes) {
+        let class_name = if node.shape == FlowchartNodeShape::Decision {
+            "dm-mermaid-node dm-mermaid-decision"
+        } else {
+            "dm-mermaid-node"
+        };
+        svg.push_str(&format!(
+            "<g class=\"{class_name}\" data-node-id=\"{}\">",
+            escape_attribute(&node.id)
+        ));
+        if node.shape == FlowchartNodeShape::Decision {
+            svg.push_str(&format!(
+                "<polygon points=\"{:.1},{:.1} {:.1},{:.1} {:.1},{:.1} {:.1},{:.1}\" />",
+                position.x,
+                position.y - position.height / 2.0,
+                position.x + position.width / 2.0,
+                position.y,
+                position.x,
+                position.y + position.height / 2.0,
+                position.x - position.width / 2.0,
+                position.y
+            ));
+        } else {
+            svg.push_str(&format!(
+                "<rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" rx=\"8\" />",
+                position.x - position.width / 2.0,
+                position.y - position.height / 2.0,
+                position.width,
+                position.height
+            ));
+        }
+        svg.push_str(&format!(
+            "<text x=\"{:.1}\" y=\"{:.1}\" text-anchor=\"middle\">{}</text></g>",
+            position.x,
+            position.y + 5.0,
+            escape_html(&node.label)
         ));
     }
 
-    svg.push_str(&edge_markup);
     svg.push_str("</svg></div>");
     svg
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum FlowchartDirection {
+    TopDown,
+    LeftRight,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum FlowchartNodeShape {
+    Rectangle,
+    Decision,
+}
+
+struct FlowchartNode {
+    id: String,
+    label: String,
+    shape: FlowchartNodeShape,
+    group: Option<usize>,
+}
+
+struct FlowchartEdge {
+    from: String,
+    to: String,
+    label: Option<String>,
+}
+
+struct FlowchartGroup {
+    label: String,
+}
+
+struct Flowchart {
+    direction: FlowchartDirection,
+    nodes: Vec<FlowchartNode>,
+    edges: Vec<FlowchartEdge>,
+    groups: Vec<FlowchartGroup>,
+}
+
+#[derive(Clone, Copy)]
+struct FlowchartNodeLayout {
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+}
+
+struct FlowchartLayout {
+    width: f32,
+    height: f32,
+    nodes: Vec<FlowchartNodeLayout>,
+    groups: Vec<Option<(f32, f32, f32, f32)>>,
+}
+
+fn parse_mermaid_flowchart(source: &str) -> Flowchart {
+    let mut flowchart = Flowchart {
+        direction: FlowchartDirection::TopDown,
+        nodes: Vec::new(),
+        edges: Vec::new(),
+        groups: Vec::new(),
+    };
+    let mut current_group = None;
+
+    for line in source.lines().map(str::trim) {
+        if line.is_empty() || line.starts_with("%%") {
+            continue;
+        }
+        if let Some(declaration) = line
+            .strip_prefix("graph ")
+            .or_else(|| line.strip_prefix("flowchart "))
+        {
+            flowchart.direction = if declaration.trim().starts_with("LR") {
+                FlowchartDirection::LeftRight
+            } else {
+                FlowchartDirection::TopDown
+            };
+            continue;
+        }
+        if let Some(label) = parse_swimlane_start(line) {
+            flowchart.groups.push(FlowchartGroup { label });
+            current_group = Some(flowchart.groups.len() - 1);
+            continue;
+        }
+        if line == "end" {
+            current_group = None;
+            continue;
+        }
+        if let Some((from, to, label)) = parse_flowchart_edge(line) {
+            let edge_from = from.id.clone();
+            let edge_to = to.id.clone();
+            upsert_flowchart_node(&mut flowchart.nodes, from, current_group);
+            upsert_flowchart_node(&mut flowchart.nodes, to, current_group);
+            flowchart.edges.push(FlowchartEdge {
+                from: edge_from,
+                to: edge_to,
+                label,
+            });
+            continue;
+        }
+        if line.contains(['[', '{']) {
+            let node = parse_flowchart_node(line);
+            if !node.id.is_empty() {
+                upsert_flowchart_node(&mut flowchart.nodes, node, current_group);
+            }
+        }
+    }
+
+    flowchart
+}
+
+fn parse_flowchart_edge(line: &str) -> Option<(FlowchartNode, FlowchartNode, Option<String>)> {
+    let (raw_from, raw_to) = line.trim_end_matches(';').split_once("-->")?;
+    let (raw_from, source_label) = if let Some((from, label)) = raw_from.rsplit_once("--") {
+        (from, Some(clean_mermaid_label(label)))
+    } else {
+        (raw_from, None)
+    };
+    let (raw_to, target_label) = if let Some(labelled) = raw_to.trim().strip_prefix('|') {
+        let (label, to) = labelled.split_once('|')?;
+        (to, Some(clean_mermaid_label(label)))
+    } else {
+        (raw_to, None)
+    };
+    Some((
+        parse_flowchart_node(raw_from),
+        parse_flowchart_node(raw_to),
+        source_label.or(target_label),
+    ))
+}
+
+fn parse_flowchart_node(value: &str) -> FlowchartNode {
+    let value = value.trim().trim_end_matches(';').trim();
+    for (opening, closing, shape) in [
+        ('[', ']', FlowchartNodeShape::Rectangle),
+        ('{', '}', FlowchartNodeShape::Decision),
+    ] {
+        if let Some(start) = value.find(opening) {
+            if let Some(end) = value.rfind(closing) {
+                return FlowchartNode {
+                    id: value[..start].trim().to_owned(),
+                    label: clean_mermaid_label(&value[start + 1..end]),
+                    shape,
+                    group: None,
+                };
+            }
+        }
+    }
+    let id = value.split_whitespace().next().unwrap_or(value).to_owned();
+    FlowchartNode {
+        label: id.clone(),
+        id,
+        shape: FlowchartNodeShape::Rectangle,
+        group: None,
+    }
+}
+
+fn upsert_flowchart_node(
+    nodes: &mut Vec<FlowchartNode>,
+    mut node: FlowchartNode,
+    group: Option<usize>,
+) {
+    if let Some(existing) = nodes.iter_mut().find(|existing| existing.id == node.id) {
+        if existing.label == existing.id && node.label != node.id {
+            existing.label = node.label;
+        }
+        if node.shape == FlowchartNodeShape::Decision {
+            existing.shape = node.shape;
+        }
+        if existing.group.is_none() {
+            existing.group = group;
+        }
+    } else {
+        node.group = group;
+        nodes.push(node);
+    }
+}
+
+fn flowchart_node_size(node: &FlowchartNode) -> (f32, f32) {
+    let text_units = node
+        .label
+        .chars()
+        .map(|character| if character.is_ascii() { 1.0 } else { 2.0 })
+        .sum::<f32>();
+    let padding = if node.shape == FlowchartNodeShape::Decision {
+        76.0
+    } else {
+        40.0
+    };
+    let width = (text_units * 7.6 + padding).clamp(112.0, 520.0);
+    let height = if node.shape == FlowchartNodeShape::Decision {
+        72.0
+    } else {
+        48.0
+    };
+    (width, height)
+}
+
+fn flowchart_edge_point(
+    node: FlowchartNodeLayout,
+    to_x: f32,
+    to_y: f32,
+    shape: FlowchartNodeShape,
+) -> (f32, f32) {
+    if shape == FlowchartNodeShape::Rectangle {
+        return rect_edge_point(node.x, node.y, to_x, to_y, node.width, node.height);
+    }
+    let dx = to_x - node.x;
+    let dy = to_y - node.y;
+    let distance = dx.abs() / (node.width / 2.0) + dy.abs() / (node.height / 2.0);
+    if distance == 0.0 {
+        (node.x, node.y)
+    } else {
+        (node.x + dx / distance, node.y + dy / distance)
+    }
+}
+
+fn flowchart_ranks(flowchart: &Flowchart) -> Vec<usize> {
+    let mut adjacency = vec![Vec::new(); flowchart.nodes.len()];
+    for (edge_index, edge) in flowchart.edges.iter().enumerate() {
+        let Some(from) = flowchart.nodes.iter().position(|node| node.id == edge.from) else {
+            continue;
+        };
+        let Some(to) = flowchart.nodes.iter().position(|node| node.id == edge.to) else {
+            continue;
+        };
+        adjacency[from].push((to, edge_index));
+    }
+    let mut states = vec![0_u8; flowchart.nodes.len()];
+    let mut back_edges = vec![false; flowchart.edges.len()];
+    for index in 0..flowchart.nodes.len() {
+        mark_flowchart_back_edges(index, &adjacency, &mut states, &mut back_edges);
+    }
+    let mut indegrees = vec![0_usize; flowchart.nodes.len()];
+    for edges in &adjacency {
+        for &(target, edge) in edges {
+            if !back_edges[edge] {
+                indegrees[target] += 1;
+            }
+        }
+    }
+    let mut ranks = vec![0_usize; flowchart.nodes.len()];
+    let mut queue = std::collections::VecDeque::new();
+    for (index, indegree) in indegrees.iter().enumerate() {
+        if *indegree == 0 {
+            queue.push_back(index);
+        }
+    }
+    while let Some(index) = queue.pop_front() {
+        for &(target, edge) in &adjacency[index] {
+            if !back_edges[edge] {
+                ranks[target] = ranks[target].max(ranks[index] + 1);
+                indegrees[target] -= 1;
+                if indegrees[target] == 0 {
+                    queue.push_back(target);
+                }
+            }
+        }
+    }
+    ranks
+}
+
+fn mark_flowchart_back_edges(
+    index: usize,
+    adjacency: &[Vec<(usize, usize)>],
+    states: &mut [u8],
+    back_edges: &mut [bool],
+) {
+    if states[index] != 0 {
+        return;
+    }
+    states[index] = 1;
+    for &(target, edge) in &adjacency[index] {
+        if states[target] == 1 {
+            back_edges[edge] = true;
+        } else if states[target] == 0 {
+            mark_flowchart_back_edges(target, adjacency, states, back_edges);
+        }
+    }
+    states[index] = 2;
+}
+
+fn layout_mermaid_flowchart(flowchart: &Flowchart) -> FlowchartLayout {
+    const NODE_GAP: f32 = 36.0;
+    const RANK_GAP: f32 = 72.0;
+    const PADDING: f32 = 48.0;
+    let sizes = flowchart
+        .nodes
+        .iter()
+        .map(flowchart_node_size)
+        .collect::<Vec<_>>();
+    let ranks = flowchart_ranks(flowchart);
+    let rank_count = ranks.iter().copied().max().unwrap_or(0) + 1;
+
+    let (width, height, nodes) = if flowchart.direction == FlowchartDirection::LeftRight {
+        layout_flowchart_left_right(&sizes, &ranks, rank_count, NODE_GAP, RANK_GAP, PADDING)
+    } else {
+        layout_flowchart_top_down(&sizes, &ranks, rank_count, NODE_GAP, RANK_GAP, PADDING)
+    };
+    let groups = flowchart
+        .groups
+        .iter()
+        .enumerate()
+        .map(|(group, _)| flowchart_group_bounds(flowchart, &nodes, group))
+        .collect();
+    FlowchartLayout {
+        width,
+        height,
+        nodes,
+        groups,
+    }
+}
+
+fn layout_flowchart_top_down(
+    sizes: &[(f32, f32)],
+    ranks: &[usize],
+    rank_count: usize,
+    node_gap: f32,
+    rank_gap: f32,
+    padding: f32,
+) -> (f32, f32, Vec<FlowchartNodeLayout>) {
+    let row_widths = (0..rank_count)
+        .map(|rank| {
+            let indices = ranks
+                .iter()
+                .enumerate()
+                .filter(|(_, node_rank)| **node_rank == rank)
+                .map(|(index, _)| index)
+                .collect::<Vec<_>>();
+            indices.iter().map(|&index| sizes[index].0).sum::<f32>()
+                + node_gap * indices.len().saturating_sub(1) as f32
+        })
+        .collect::<Vec<_>>();
+    let width = (row_widths.iter().copied().fold(0.0_f32, f32::max) + padding * 2.0).max(640.0);
+    let max_height = sizes.iter().map(|size| size.1).fold(48.0_f32, f32::max);
+    let height = padding * 2.0
+        + rank_count as f32 * max_height
+        + rank_count.saturating_sub(1) as f32 * rank_gap;
+    let mut nodes = vec![
+        FlowchartNodeLayout {
+            x: 0.0,
+            y: 0.0,
+            width: 0.0,
+            height: 0.0,
+        };
+        sizes.len()
+    ];
+    for (rank, row_width) in row_widths.iter().enumerate() {
+        let mut x = (width - row_width) / 2.0;
+        for (index, _) in ranks
+            .iter()
+            .enumerate()
+            .filter(|(_, value)| **value == rank)
+        {
+            let (node_width, node_height) = sizes[index];
+            nodes[index] = FlowchartNodeLayout {
+                x: x + node_width / 2.0,
+                y: padding + max_height / 2.0 + rank as f32 * (max_height + rank_gap),
+                width: node_width,
+                height: node_height,
+            };
+            x += node_width + node_gap;
+        }
+    }
+    (width, height, nodes)
+}
+
+fn layout_flowchart_left_right(
+    sizes: &[(f32, f32)],
+    ranks: &[usize],
+    rank_count: usize,
+    node_gap: f32,
+    rank_gap: f32,
+    padding: f32,
+) -> (f32, f32, Vec<FlowchartNodeLayout>) {
+    let column_widths = (0..rank_count)
+        .map(|rank| {
+            ranks
+                .iter()
+                .enumerate()
+                .filter(|(_, node_rank)| **node_rank == rank)
+                .map(|(index, _)| sizes[index].0)
+                .fold(0.0_f32, f32::max)
+        })
+        .collect::<Vec<_>>();
+    let column_heights = (0..rank_count)
+        .map(|rank| {
+            let indices = ranks
+                .iter()
+                .enumerate()
+                .filter(|(_, node_rank)| **node_rank == rank)
+                .map(|(index, _)| index)
+                .collect::<Vec<_>>();
+            indices.iter().map(|&index| sizes[index].1).sum::<f32>()
+                + node_gap * indices.len().saturating_sub(1) as f32
+        })
+        .collect::<Vec<_>>();
+    let width = padding * 2.0
+        + column_widths.iter().sum::<f32>()
+        + rank_gap * rank_count.saturating_sub(1) as f32;
+    let height = column_heights.iter().copied().fold(230.0_f32, f32::max) + padding * 2.0;
+    let mut nodes = vec![
+        FlowchartNodeLayout {
+            x: 0.0,
+            y: 0.0,
+            width: 0.0,
+            height: 0.0,
+        };
+        sizes.len()
+    ];
+    let mut x = padding;
+    for rank in 0..rank_count {
+        let mut y = (height - column_heights[rank]) / 2.0;
+        for (index, _) in ranks
+            .iter()
+            .enumerate()
+            .filter(|(_, value)| **value == rank)
+        {
+            let (node_width, node_height) = sizes[index];
+            nodes[index] = FlowchartNodeLayout {
+                x: x + column_widths[rank] / 2.0,
+                y: y + node_height / 2.0,
+                width: node_width,
+                height: node_height,
+            };
+            y += node_height + node_gap;
+        }
+        x += column_widths[rank] + rank_gap;
+    }
+    (width.max(640.0), height, nodes)
+}
+
+fn flowchart_group_bounds(
+    flowchart: &Flowchart,
+    positions: &[FlowchartNodeLayout],
+    group: usize,
+) -> Option<(f32, f32, f32, f32)> {
+    let anchor = flowchart
+        .nodes
+        .iter()
+        .enumerate()
+        .filter(|(_, node)| node.group == Some(group))
+        .map(|(index, _)| positions[index])
+        .min_by(|left, right| left.y.total_cmp(&right.y))?;
+    let label_width = flowchart.groups[group]
+        .label
+        .chars()
+        .map(|character| if character.is_ascii() { 7.0 } else { 14.0 })
+        .sum::<f32>()
+        + 24.0;
+    Some((
+        anchor.x - label_width / 2.0,
+        anchor.y - anchor.height / 2.0 - 34.0,
+        label_width,
+        26.0,
+    ))
 }
 
 struct Swimlane {
@@ -5539,9 +6012,9 @@ fn url_scheme_end(url: &str) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use super::{
-        layout_mindmap_nodes, parse_css_color, render_color_chip, render_markdown_to_html,
-        render_markdown_to_html_with_options, split_front_matter, DmMarkdownOptions,
-        FrontMatterMode, MindmapNode,
+        layout_mermaid_flowchart, layout_mindmap_nodes, parse_css_color, parse_mermaid_flowchart,
+        render_color_chip, render_markdown_to_html, render_markdown_to_html_with_options,
+        split_front_matter, DmMarkdownOptions, FrontMatterMode, MindmapNode,
     };
 
     #[test]
@@ -6143,8 +6616,8 @@ mod tests {
 
     #[test]
     fn renders_mermaid_fenced_blocks() {
-        let html =
-            render_markdown_to_html("```mermaid\nflowchart LR\n  A[Markdown] --> B[HTML]\n```");
+        let source = "flowchart LR\n  A[Markdown] --> B[HTML]";
+        let html = render_markdown_to_html(&format!("```mermaid\n{source}\n```"));
 
         assert!(html.contains("dm-mermaid-chart"));
         assert!(html.contains("dm-mermaid-flowchart"));
@@ -6152,6 +6625,74 @@ mod tests {
         assert!(html.contains("HTML"));
         assert!(html.contains("dm-mermaid-edge"));
         assert!(!html.contains(r#"x2="560.0" y2="150.0""#));
+
+        let flowchart = parse_mermaid_flowchart(source);
+        let layout = layout_mermaid_flowchart(&flowchart);
+        assert!(layout.nodes[0].x < layout.nodes[1].x);
+        assert_eq!(layout.nodes[0].y, layout.nodes[1].y);
+    }
+
+    #[test]
+    fn renders_dense_flowcharts_with_subgraphs_decisions_and_edge_labels() {
+        let source = "graph TD\n    subgraph Customer [客户]\n        A[开始] --> B[用户进行选购产品]\n        B --> D[用户进行申请单填写并提交]\n        D --> G[配置记录值]\n        G --> K[获取证书]\n        K --> L[流程结束]\n    end\n    subgraph CFCA [CFCA]\n        C[生成订阅单]\n        F[生成域名验证记录值]\n        H[审核验证]\n        J[签发证书]\n    end\n    B --> C\n    C --> D\n    D --> E{域名自动验证}\n    E -- 是 --> F\n    E -- 否 --> H\n    F --> G\n    G --> H\n    H --> I{通过}\n    I -- 否 --> D\n    I -- 是 --> J\n    J --> K";
+        let html = render_markdown_to_html(&format!("```mermaid\n{source}\n```"));
+
+        assert_eq!(html.matches("class=\"dm-mermaid-node").count(), 12);
+        for label in [
+            "客户",
+            "CFCA",
+            "生成订阅单",
+            "生成域名验证记录值",
+            "域名自动验证",
+            "审核验证",
+            "签发证书",
+            "通过",
+            "是",
+            "否",
+        ] {
+            assert!(html.contains(&format!(">{label}<")), "missing {label}");
+        }
+        assert!(html.contains("dm-mermaid-decision"));
+        assert!(html.contains("dm-mermaid-subgraph"));
+
+        let flowchart = parse_mermaid_flowchart(source);
+        let layout = layout_mermaid_flowchart(&flowchart);
+        assert_eq!(flowchart.edges.len(), 16);
+        assert!(layout.height > 230.0);
+        let position = |id: &str| {
+            let index = flowchart
+                .nodes
+                .iter()
+                .position(|node| node.id == id)
+                .unwrap();
+            layout.nodes[index]
+        };
+        assert!(position("A").y < position("B").y);
+        assert!(position("B").y < position("C").y);
+        assert!(position("C").y < position("D").y);
+        for (index, node) in layout.nodes.iter().enumerate() {
+            assert!(node.x - node.width / 2.0 >= 0.0);
+            assert!(node.x + node.width / 2.0 <= layout.width);
+            assert!(node.y - node.height / 2.0 >= 0.0);
+            assert!(node.y + node.height / 2.0 <= layout.height);
+            for other in &layout.nodes[index + 1..] {
+                let separated = node.x + node.width / 2.0 + 24.0 <= other.x - other.width / 2.0
+                    || other.x + other.width / 2.0 + 24.0 <= node.x - node.width / 2.0
+                    || node.y + node.height / 2.0 + 24.0 <= other.y - other.height / 2.0
+                    || other.y + other.height / 2.0 + 24.0 <= node.y - node.height / 2.0;
+                assert!(separated, "flowchart nodes overlap");
+            }
+        }
+        let groups = layout.groups.iter().flatten().collect::<Vec<_>>();
+        for (index, left) in groups.iter().enumerate() {
+            for right in &groups[index + 1..] {
+                let separated = left.0 + left.2 <= right.0
+                    || right.0 + right.2 <= left.0
+                    || left.1 + left.3 <= right.1
+                    || right.1 + right.3 <= left.1;
+                assert!(separated, "flowchart subgraphs overlap");
+            }
+        }
     }
 
     #[test]

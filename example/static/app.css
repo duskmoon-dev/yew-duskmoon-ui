@@ -2299,7 +2299,8 @@ textarea {
     fill: var(--dm-mermaid-accent);
 }
 
-.markdown-body .dm-mermaid-node rect {
+.markdown-body .dm-mermaid-node rect,
+.markdown-body .dm-mermaid-node polygon {
     fill: var(--dm-mermaid-panel);
     stroke: color-mix(in oklch, var(--component-color, var(--dm-copper)) 52%, var(--dm-line));
     stroke-width: 1.5;
@@ -2310,6 +2311,28 @@ textarea {
     font-family: var(--font-body);
     font-size: 0.78rem;
     font-weight: 900;
+}
+
+.markdown-body .dm-mermaid-subgraph rect {
+    fill: color-mix(in oklch, var(--dm-mermaid-panel) 42%, transparent);
+    stroke: color-mix(in oklch, var(--dm-mermaid-accent) 44%, var(--dm-line));
+    stroke-width: 1.2;
+    stroke-dasharray: 6 4;
+}
+
+.markdown-body .dm-mermaid-subgraph text,
+.markdown-body .dm-flowchart-edge-label {
+    fill: var(--component-on-container, var(--dm-paper));
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.markdown-body .dm-flowchart-edge-label {
+    paint-order: stroke;
+    stroke: var(--color-surface-container);
+    stroke-width: 4px;
+    stroke-linejoin: round;
 }
 
 .markdown-body .dm-swimlane-lane rect {
