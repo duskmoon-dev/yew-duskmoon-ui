@@ -94,6 +94,37 @@ flowchart LR
   Renderer --> Chart[Mermaid Chart]
 ```
 
+### Directed workflow with groups and decisions
+
+```mermaid
+graph TD
+  subgraph Studio [Content studio]
+    A[Draft a technical article] --> B[Submit the article for review]
+    R[Revise the article from the review report]
+  end
+  subgraph Pipeline [Publishing pipeline]
+    C[Build a private preview]
+    D[Run link, style, and accessibility checks]
+    E{All automated checks pass}
+    F[Create a detailed correction report]
+    G[Prepare the production publication]
+    H{Editorial approval required}
+    I[Request final editorial approval]
+    J[Publish the article and notify subscribers]
+  end
+  B --> C
+  C --> D
+  D --> E
+  E -- No --> F
+  F --> R
+  R --> B
+  E -- Yes --> G
+  G --> H
+  H -- Yes --> I
+  I --> J
+  H -- No --> J
+```
+
 ```mermaid
 swimlane-beta LR
   subgraph Customer
