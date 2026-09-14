@@ -4220,9 +4220,8 @@ fn render_mermaid_mindmap(source: &str) -> String {
     }
 
     let max_depth = nodes.iter().map(|node| node.depth).max().unwrap_or(0);
-    let width: f32 = 760.0;
     let height = 128.0 + max_depth as f32 * 96.0;
-    let positions = layout_mindmap_nodes(&nodes, width);
+    let (width, positions) = layout_mindmap_nodes(&nodes, 760.0);
     let mut svg = format!(
         "<div class=\"dm-mermaid-chart dm-mermaid-mindmap\" role=\"img\" aria-label=\"Rendered Mermaid mindmap\"><div class=\"dm-mermaid-chart-title\">Mermaid mindmap</div><svg viewBox=\"0 0 {width:.0} {height:.0}\" aria-hidden=\"true\">"
     );
@@ -4263,61 +4262,133 @@ fn render_mermaid_mindmap(source: &str) -> String {
     svg
 }
 
-fn layout_mindmap_nodes(nodes: &[MindmapNode], width: f32) -> Vec<(f32, f32, f32, f32)> {
-    let mut positions = vec![(width / 2.0, 58.0, 180.0, 54.0); nodes.len()];
-    let max_depth = nodes.iter().map(|node| node.depth).max().unwrap_or(0);
+fn layout_mindmap_nodes(
+    nodes: &[MindmapNode],
+    minimum_width: f32,
+) -> (f32, Vec<(f32, f32, f32, f32)>) {
+    const HORIZONTAL_GAP: f32 = 12.0;
+    const SIDE_PADDING: f32 = 48.0;
 
-    for depth in 0..=max_depth {
-        let depth_nodes = nodes
-            .iter()
-            .enumerate()
-            .filter(|(_, node)| node.depth == depth)
-            .map(|(index, _)| index)
-            .collect::<Vec<_>>();
-
-        if depth == 0 {
-            let label_width = (nodes[depth_nodes[0]].label.chars().count() as f32 * 9.5 + 58.0)
-                .clamp(156.0, 230.0);
-            positions[depth_nodes[0]] = (width / 2.0, 58.0, label_width, 54.0);
-            continue;
-        }
-
-        for index in depth_nodes {
-            let siblings = nodes[index]
-                .parent
-                .map(|parent| {
-                    nodes
-                        .iter()
-                        .enumerate()
-                        .filter(|(_, node)| node.parent == Some(parent))
-                        .map(|(sibling_index, _)| sibling_index)
-                        .collect::<Vec<_>>()
-                })
-                .unwrap_or_default();
-            let sibling_index = siblings
-                .iter()
-                .position(|sibling| *sibling == index)
-                .unwrap_or(0);
-            let parent_x = nodes[index]
-                .parent
-                .map(|parent| positions[parent].0)
-                .unwrap_or(width / 2.0);
-            let spread = ((siblings.len().saturating_sub(1)) as f32 * 122.0).min(560.0);
-            let x = if siblings.len() <= 1 {
-                parent_x
+    let node_sizes = nodes
+        .iter()
+        .map(|node| {
+            if node.depth == 0 {
+                (
+                    (node.label.chars().count() as f32 * 9.5 + 58.0).clamp(156.0, 230.0),
+                    54.0,
+                )
             } else {
-                parent_x - spread / 2.0
-                    + sibling_index as f32 * (spread / (siblings.len() - 1) as f32)
+                (
+                    (node.label.chars().count() as f32 * 9.0 + 44.0).clamp(112.0, 190.0),
+                    46.0,
+                )
             }
-            .clamp(72.0, width - 72.0);
-            let y = 58.0 + depth as f32 * 96.0;
-            let node_width =
-                (nodes[index].label.chars().count() as f32 * 9.0 + 44.0).clamp(112.0, 190.0);
-            positions[index] = (x, y, node_width, 46.0);
-        }
+        })
+        .collect::<Vec<_>>();
+    let children = (0..nodes.len())
+        .map(|parent| {
+            nodes
+                .iter()
+                .enumerate()
+                .filter(|(_, node)| node.parent == Some(parent))
+                .map(|(index, _)| index)
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    let roots = nodes
+        .iter()
+        .enumerate()
+        .filter(|(_, node)| node.parent.is_none())
+        .map(|(index, _)| index)
+        .collect::<Vec<_>>();
+    let mut subtree_widths = vec![0.0; nodes.len()];
+    for &root in &roots {
+        measure_mindmap_subtree(
+            root,
+            &children,
+            &node_sizes,
+            &mut subtree_widths,
+            HORIZONTAL_GAP,
+        );
+    }
+    let forest_width = roots.iter().map(|&root| subtree_widths[root]).sum::<f32>()
+        + HORIZONTAL_GAP * roots.len().saturating_sub(1) as f32;
+    let width = minimum_width.max(forest_width + SIDE_PADDING * 2.0);
+    let mut positions = vec![(width / 2.0, 58.0, 0.0, 0.0); nodes.len()];
+    let mut left = (width - forest_width) / 2.0;
+    for root in roots {
+        position_mindmap_subtree(
+            root,
+            left,
+            nodes,
+            &children,
+            &node_sizes,
+            &subtree_widths,
+            &mut positions,
+            HORIZONTAL_GAP,
+        );
+        left += subtree_widths[root] + HORIZONTAL_GAP;
     }
 
-    positions
+    (width, positions)
+}
+
+fn measure_mindmap_subtree(
+    index: usize,
+    children: &[Vec<usize>],
+    node_sizes: &[(f32, f32)],
+    subtree_widths: &mut [f32],
+    gap: f32,
+) -> f32 {
+    let children_width = children[index]
+        .iter()
+        .map(|&child| measure_mindmap_subtree(child, children, node_sizes, subtree_widths, gap))
+        .sum::<f32>()
+        + gap * children[index].len().saturating_sub(1) as f32;
+    let width = node_sizes[index].0.max(children_width);
+    subtree_widths[index] = width;
+    width
+}
+
+#[allow(clippy::too_many_arguments)]
+fn position_mindmap_subtree(
+    index: usize,
+    left: f32,
+    nodes: &[MindmapNode],
+    children: &[Vec<usize>],
+    node_sizes: &[(f32, f32)],
+    subtree_widths: &[f32],
+    positions: &mut [(f32, f32, f32, f32)],
+    gap: f32,
+) {
+    let subtree_width = subtree_widths[index];
+    let (node_width, node_height) = node_sizes[index];
+    positions[index] = (
+        left + subtree_width / 2.0,
+        58.0 + nodes[index].depth as f32 * 96.0,
+        node_width,
+        node_height,
+    );
+
+    let children_width = children[index]
+        .iter()
+        .map(|&child| subtree_widths[child])
+        .sum::<f32>()
+        + gap * children[index].len().saturating_sub(1) as f32;
+    let mut child_left = left + (subtree_width - children_width) / 2.0;
+    for &child in &children[index] {
+        position_mindmap_subtree(
+            child,
+            child_left,
+            nodes,
+            children,
+            node_sizes,
+            subtree_widths,
+            positions,
+            gap,
+        );
+        child_left += subtree_widths[child] + gap;
+    }
 }
 
 fn clean_mindmap_label(label: &str) -> String {
@@ -5468,9 +5539,9 @@ fn url_scheme_end(url: &str) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use super::{
-        parse_css_color, render_color_chip, render_markdown_to_html,
+        layout_mindmap_nodes, parse_css_color, render_color_chip, render_markdown_to_html,
         render_markdown_to_html_with_options, split_front_matter, DmMarkdownOptions,
-        FrontMatterMode,
+        FrontMatterMode, MindmapNode,
     };
 
     #[test]
@@ -6399,5 +6470,36 @@ mod tests {
         let mindmap = render_markdown_to_html("```mermaid\nmindmap\n  root((DmMarkdown))\n```");
         assert!(mindmap.contains(">DmMarkdown<"));
         assert!(!mindmap.contains("root((DmMarkdown"));
+    }
+
+    #[test]
+    fn mindmap_layout_keeps_neighboring_subtrees_apart() {
+        let nodes = [
+            ("DmMarkdown", None, 0),
+            ("Markdown", Some(0), 1),
+            ("Tables", Some(1), 2),
+            ("Task lists", Some(1), 2),
+            ("Code", Some(0), 1),
+            ("Rust", Some(4), 2),
+            ("TypeScript", Some(4), 2),
+            ("Mermaid", Some(0), 1),
+            ("Flowchart", Some(7), 2),
+            ("Sequence", Some(7), 2),
+        ]
+        .into_iter()
+        .map(|(label, parent, depth)| MindmapNode {
+            label: label.to_owned(),
+            parent,
+            depth,
+        })
+        .collect::<Vec<_>>();
+        let (width, positions) = layout_mindmap_nodes(&nodes, 760.0);
+
+        assert!(width > 760.0);
+        for pair in [2, 3, 5, 6, 8, 9].windows(2) {
+            let (left_x, _, left_width, _) = positions[pair[0]];
+            let (right_x, _, right_width, _) = positions[pair[1]];
+            assert!(left_x + left_width / 2.0 + 12.0 <= right_x - right_width / 2.0);
+        }
     }
 }
